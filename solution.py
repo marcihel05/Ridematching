@@ -1,16 +1,18 @@
 import random
-
+from driver import *
 from settings import *
 
 class Solution:
-    def __init__(self):
-        self.routes = []
+    def __init__(self, riders, drivers):
+        self.routes = drivers #lista Drivera
+        self.riders = riders #lista svih Ridera
         self.fitness = 0
-        self.unmatched = []
+        self.unmatched = [] #lista Ridera koji se ne voze
         self.numOfRoutes = 0 #len(self.routes)
     
-    def initialize(self, data): #inicijaliziraj početno rješenje 
-        ...
+    def initialize(self): #inicijaliziraj početno rješenje - posloži driver.stops i unmatched stops
+       ...
+            
         
     def mutate(self):
         ...

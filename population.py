@@ -1,16 +1,26 @@
 from settings import *
 from solution import *
+from rider import *
+from driver import *
 
 class Population:
-    def __init__(self, data):
+    def __init__(self, riderData, driverData): 
         self.solutions = []
         self.bestValue = 0
         self.bestSolution = 0
-        self.initialize(data)
+        self.riders = []
+        self.drivers = []
+        self.initialize(riderData, driverData)
 
-    def initialize(self, data): #inicijaliziraj početnu populaciju
+    def initialize(self, riderData, driverData): #inicijaliziraj početnu populaciju
+        #riderData - lista u kojoj su liste s podacima za svakog putnika(id, start, end, depTime, arrTime)
+        #driverData - lista u kojoj su liste s podacima za svakog vozača(id, start, end, depTime, arrTime, kapacitet)
+        for data in riderData:
+            self.riders.append(Rider(data))
+        for data in driverData:
+            self.drivers.append(Driver(data))
         while len(self.solutions) < NUM_OF_SOLUTIONS:
-            solution = Solution(data)
+            solution = Solution(self.riders, self.drivers)
             solution.initialize()
             self.solutions.append(solution)
     

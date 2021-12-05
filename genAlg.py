@@ -2,8 +2,8 @@ from population import *
 
 from settings import *
 
-def genAlg():
-    population = Population()
+def genAlg(riderData, driverData):
+    population = Population(riderData, driverData)
     numOfIt = 1
     valueOfFunc = [] #lista vrijednosti funkcije po iteracijama
     bestSolutions = []
