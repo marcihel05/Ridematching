@@ -1,8 +1,9 @@
 class Rider:
-    def __init__(self):
-        self.id = 0
-        self.start = 0
-        self.end = 0
-        self.depTime = 0
-        self.arivalTime = 0
+    def __init__(self, data):
+        self.id = data[0]
+        self.start = data[1]
+        self.end = data[2]
+        self.depTime = data[3]
+        self.arivalTime = data[4]
+        self.numOfPaseengers = data[5]
     
