@@ -28,11 +28,14 @@ class Solution:
     def calculateFitness(self): #racunaj funkciju dobrote (po onoj formuli)
         val = 0
         dist = 0
+        time = 0
         for driver in self.routes:
             dist += driver.calcDistance()
-            #driver.calcTime()
+            time += T[driver.id][driver.end] - T[driver.id][driver.start] #T - matrica taka da T[i][j] = vrijeme u koje je vozač s id-em i došao na destinaciju j
         dist*=alpha
+        time*=beta
         val+=dist
+        val+=time
         return val
 
     def checkIfFeasible(self): #pogledaj dal više vozača ne vozi istog putnika
