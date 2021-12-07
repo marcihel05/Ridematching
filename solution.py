@@ -3,7 +3,7 @@ from driver import *
 from settings import *
 
 class Solution:
-    def __init__(self, riders, drivers):
+    def __init__(self, riders = [], drivers = []):
         self.routes = drivers #lista Drivera
         self.riders = riders #lista svih Ridera
         self.fitness = 0
@@ -26,10 +26,19 @@ class Solution:
         return newSolution1, newSolution2
     
     def calculateFitness(self): #racunaj funkciju dobrote (po onoj formuli)
-        ...
+        val = 0
+        dist = 0
+        for driver in self.routes:
+            dist += driver.calcDistance()
+            #driver.calcTime()
+        dist*=alpha
+        val+=dist
+        return val
 
-    def checkIfFeasible(self):
-        ...
+    def checkIfFeasible(self): #pogledaj dal više vozača ne vozi istog putnika
+        for route in self.routes:
+            ...
+        return True
     
     def fix(self): #popravi ako nije dopustivo
         ...

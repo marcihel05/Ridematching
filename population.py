@@ -62,7 +62,6 @@ class Population:
         for solution in self.solutions:
             solution.calculateFitness()
     
-    def makeNewSolutions(self):
 
     
     
