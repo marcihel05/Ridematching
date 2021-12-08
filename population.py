@@ -62,6 +62,18 @@ class Population:
         for solution in self.solutions:
             solution.calculateFitness()
     
+    def rouletteWheelSelection(self):
+        sumOfFitness = 0
+        for solution in self.solutions:
+            sumOfFitness += solution.fitness
+        r = random.uniform(0,1)
+        sum = 0
+        for solution in self.solutions:
+            sum += (solution.fitness/sumOfFitness)
+            if sum > r:
+                return solution
+        return self.solutions[len(self.solutions)-1]
+        
 
     
     
