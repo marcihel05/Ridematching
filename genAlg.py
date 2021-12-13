@@ -20,10 +20,6 @@ def genAlg(riderData, driverData):
             parent1 = population.selection()
             parent2 = population.selection()
             child1, child2 = parent1.crossover(parent2)
-            if not child1.checkIfFeasible():
-                child1.fix()
-            if not child2.checkIfFeasible():
-                child2.fix()
             child1.mutate()
             child2.mutate()
             newRoutes.append(child1)
