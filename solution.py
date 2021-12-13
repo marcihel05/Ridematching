@@ -11,10 +11,37 @@ class Solution:
         self.numOfRoutes = 0 #len(self.routes)
     
     def initialize(self): #inicijaliziraj početno rješenje - posloži driver.stops i unmatched stops
-       ...
+       ridersCopy = self.riders
+       for i in range(NUM_OF_SOLUTIONS):
+           r = random.randrange(0,len(ridersCopy))
+           rider = ridersCopy[r]
+           ridersCopy.remove(rider)
+           random.shuffle(self.routes)
+           for driver in self.routes:
+               if driver.taken + rider.numOfPassengers <= driver.capacity: #putnik stane u auto
+                   if driver.depTime < rider.depTime and driver.arrivalTime > rider.arrivalTime: #vremenski okvir je okej
+                       for stop in driver.stops:
+
+
+
             
         
     def mutate(self):
+        ...
+    
+    def pushBackward(self): #first mutation operator
+        ...
+    
+    def pushForward(self): #seconds mutation operator
+        ...
+    
+    def removeInsert(self): #third mutation operator
+        ...
+    
+    def transfer(self): #fourth mutation operator
+        ...
+    
+    def swap(self): #fifth mutation operator
         ...
 
     def crossover(self, otherSolution):
