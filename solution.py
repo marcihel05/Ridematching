@@ -47,15 +47,16 @@ class Solution:
         ...
 
     def crossover(self, otherSolution):
-        newSolution1, newSolution2 = Solution(), Solution()
-        newSolution1.routes = self.routes
-        newSolution2.routes = otherSolution.routes
+        newSolution1, newSolution2 = self, otherSolution
         routeIndex = random.randrange(self.numOfRoutes)
-        newSolution1.routes[routeIndex], newSolution2.routes[routeIndex] = newSolution2.routes[routeIndex], newSolution1.routes[routeIndex]
-        if not newSolution1.checkIfFeasibleAfterCross(routeIndex):
-            newSolution1.fix(routeIndex)
-        if not newSolution2.checkIfFeasibleAfterCross(routeIndex):
-            newSolution2.fix(routeIndex)
+        for i in range(routeIndex, len(self.routes)):
+            newSolution1.routes[i], newSolution2.routes[i] = newSolution2.routes[i], newSolution1.routes[i]
+        newSolution1.checkIfFeasibleAfterCrossAndFix(routeIndex)
+        newSolution2.checkIfFeasibleAfterCrossAndFix(routeIndex)
+        newSolution1.modifyUnmatched()
+        newSolution2.modifyUnmatched()
+        newSolution1.insertUnmatched()
+        newSolution2.insertUnmatched()
         return newSolution1, newSolution2
     
     def calculateFitness(self): #racunaj funkciju dobrote (po onoj formuli)
@@ -71,7 +72,7 @@ class Solution:
         val+=time
         return val
 
-    def checkIfFeasibleAfterCrossAndFix(self, routeIndex): #pogledaj dal više vozača ne vozi istog putnik 0a
+    def checkIfFeasibleAfterCrossAndFix(self, routeIndex): #pogledaj dal više vozača ne vozi istog putnika i makni ako ima toga
         for i in range(routeIndex+1):
             for stop1 in self.routes[i].stops:
                 if stop1[2] == 0:
@@ -85,5 +86,18 @@ class Solution:
             
         
     
-    def fix(self): #popravi ako nije dopustivo
-        ...
+    def modifyUnmatched(self):
+        unmatchedNew = []
+        for rider in self.riders:
+            exists = False
+            for route in self.routes:
+                if route.stops.count([rider, rider.start,0]) > 0:
+                    exists = True
+                    break
+            if not exists:
+                unmatchedNew.append(rider)
+        self.unmatched = unmatchedNew
+    
+    def insertUnmatched(self):
+        for rider in self.unmatched:
+            ...#probaj ga negde ubaciti
