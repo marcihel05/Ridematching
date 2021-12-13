@@ -4,8 +4,9 @@ class Driver:
         self.start = data[1]
         self.end = data[2]
         self.depTime = data[3]
-        self.arivalTime = data[4]
+        self.arrivalTime = data[4]
         self.capacity = data[5]
+        self.taken = 0
         self.stops = [] #stanice po putu - lista uređenih trojki (rider, point, c \in {0,1}) (0 - tu ga pokupim, 1 - tu ga ostavim)
         
     

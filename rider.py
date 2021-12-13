@@ -4,6 +4,6 @@ class Rider:
         self.start = data[1]
         self.end = data[2]
         self.depTime = data[3]
-        self.arivalTime = data[4]
-        self.numOfPaseengers = data[5]
+        self.arrivalTime = data[4]
+        self.numOfPassengers = data[5]
     
