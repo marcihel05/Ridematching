@@ -17,7 +17,48 @@ class Driver:
         dist += D[self.stops[len(self.stops)-1]][self.end]
         return dist
     
-   """ def calcTime(self): #trajanje puta
+  
+
+    def compareTime(self, rider,index, inOrOut):
+        if inOrOut == 0:
+            time = rider.depTime
+        else:
+            time = rider.arrivalTime
+        stop1 = self.stops[index]
+        stop2 = self.stops[index+1]
+        if stop1[2] == 0:
+            time1 = stop1[0].depTime
+        else:
+            time1 = stop1[0].arrivalTime      
+        if stop2[2] == 0:
+            time2 = stop2[0].depTime
+        else:
+            time2 = stop2[0].arrivalTime
+
+        return time > time1 and time < time2
+    
+    def checkCapacity(self, numOfPass, index):
+        cap = 0
+        for i in range(index+1):
+            if self.stops[i][2] == 0:
+                cap += self.stops[i][0].numOfPassengers
+            else:
+                cap -= self.stops[i][0].numOfPassengers
+        return cap + numOfPass <= self.capacity
+    
+    def calculateTakenSeats(self):
+        tkn = 0
+        for stop in self.stops:
+            if stop[2] == 0:
+                tkn += stop[0].numOfPassengers
+            else:
+                tkn -= self.stop[0].numOfPassengers
+        self.taken = tkn
+        return tkn
+
+
+
+         """ def calcTime(self): #trajanje puta
         time = 0
         for i in range(len(self.stops)-1):
             time += T[self.stops[i][1]][self.stops[i+1][1]] # T - matrica takva da T[i][j] == vrijeme vožnje između stanica i i j
