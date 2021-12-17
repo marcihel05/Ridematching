@@ -21,7 +21,11 @@ class Population:
         for data in driverData:
             self.drivers.append(Driver(data))
         while len(self.solutions) < NUM_OF_SOLUTIONS:
-            solution = Solution(self.riders, self.drivers)
+            #for driver in self.drivers:
+             #   driver.stops = []
+            driverCopy = [driver.copy() for driver in self.drivers]
+            riderCopy = [rider.copy() for rider in self.riders]
+            solution = Solution(riderCopy, driverCopy)
             solution.initialize()
             self.solutions.append(solution)
     
@@ -56,12 +60,7 @@ class Population:
                 minVal = solution.fitness
                 secMinSol = solution
         return minSol, secMinSol
-        
-    
-    def evaluate(self):
-        for solution in self.solutions:
-            solution.calculateFitness()
-    
+        riderData, driverData
     def rouletteWheelSelection(self):
         sumOfFitness = 0
         for solution in self.solutions:

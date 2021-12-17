@@ -4,47 +4,52 @@ from settings import *
 
 class Solution:
     def __init__(self, riders = [], drivers = []):
-        self.routes = drivers #lista Drivera
-        self.riders = riders #lista svih Ridera
+        self.routes = drivers.copy() #lista Drivera
+        self.riders = riders.copy() #lista svih Ridera
         self.fitness = 0
         self.unmatched = [] #lista Ridera koji se ne voze
         self.numOfRoutes = 0 #len(self.routes)
     
     def initialize(self): #inicijaliziraj početno rješenje - posloži driver.stops i unmatched stops #DODATI PROVJERU JE LI FIZIČKI MOGUĆE DOĆI S JEDNE LOKACIJE NA SLJEDEĆU U ZADANOM VREMENU
-       ridersCopy = self.riders
+       ridersCopy = self.riders.copy()
        random.shuffle(self.routes)
+       #print("Next solution")
        for driver in self.routes:
+        #   print("Start")
+          # driver.printDriver()
            for i in range(len(ridersCopy)):
+         #      print(i)
                r = random.randrange(len(ridersCopy))
                rider = ridersCopy[r]
                if driver.depTime < rider.depTime and driver.arrivalTime > rider.arrivalTime: #vremenski okvir je okej
                     inserted = False
-                    for i in range(len(driver.stops) - 1): #di buš ga pokupil
+                    for i in range(-1, len(driver.stops) - 1): #di buš ga pokupil
                         if driver.compareTime(rider, i, 0) and driver.checkCapacity(rider.numOfPassengers, i):
                             driver.stops.insert(i+1, [rider,rider.start,0]) #na pravi indeks između i i i+1
-                            k = i+2
+                            k = i+1
                             inserted = True
                             break
                     if not inserted:
                         if driver.calculateTakenSeats() + rider.numOfPassengers <= driver.capacity:
                             driver.stops.append([rider,rider.start,0])
                             driver.stops.append([rider,rider.end,1])
-                            ridersCopy.remove(rider)
+                            ridersCopy.pop(r)
                     else:
                         inserted = False
                         for j in range(k, len(driver.stops) - 1): #di buš ga ostavil
-                            if self.compareTime(rider, j, 1):
+                            if driver.compareTime(rider, j, 1):
                                 driver.stops.insert(j+1, [rider,rider.end,1]) #na pravi indeks
                                 inserted = True
-                                ridersCopy.remove(rider)
+                                ridersCopy.pop(r)
                                 break
                         if not inserted:
                             driver.stops.append([rider,rider.end,1])
-                            ridersCopy.remove(rider)
-       self.unmatched = ridersCopy
+                            ridersCopy.pop(r)
+          # print("End")
+           #driver.printDriver()
+       self.unmatched = ridersCopy.copy()
        self.numOfRoutes = len(self.routes)
-       for driver in self.routes:
-           driver.calculateTakenSeats()            
+       #self.calcTaken()         
             
         
     def mutate(self):
@@ -57,19 +62,23 @@ class Solution:
     def pushBackward(self): #first mutation operator
         for route in self.routes:
             r = random.random()
-            if r < MUTATION_RATE:
+            if r < MUTATION_RATE: #mutiraj
                 i = random.randrange(len(route.stops))
+
+                route.calculateTakenSeats()
     
     def pushForward(self): #seconds mutation operator
         for route in self.routes:
             r = random.random()
-            if r < MUTATION_RATE:
+            if r < MUTATION_RATE: #mutiraj
                 i = random.randrange(len(route.stops))
+                
+                route.calculateTakenSeats()
     
     def removeInsert(self): #third mutation operator
         for route in self.routes:
             r = random.random()
-            if r < MUTATION_RATE:
+            if r < MUTATION_RATE: #mutiraj
                 i = random.randrange(len(route.stops))
                 stop = route.stops[i]
                 self.unmatched.append(stop[0])
@@ -77,21 +86,23 @@ class Solution:
                 route.stops.remove([stop[0], stop[0].end, 1])
                 for rider in self.unmatched:
                     self.tryToInsert(rider)
+                route.calculateTakenSeats()
                 
     
     def transfer(self): #fourth mutation operator
         for route in self.routes:
             r = random.random()
-            if r < MUTATION_RATE:
+            if r < MUTATION_RATE: #mutiraj
                 i = random.randrange(len(route.stops))
                 if self.tryToInsert(self.routes.index(route), route.stops[i][0]):
                     route.stops.remove(route.stops[i])
                     route.stops.remove([route.stops[i][0], route.stops[i][0].end, 1])
+                route.calculateTakenSeats()
     
     def swap(self): #fifth mutation operator
         for route in self.routes:
             r = random.random()
-            if r < MUTATION_RATE:
+            if r < MUTATION_RATE: #mutiraj
                 i = random.randrange(len(route.stops))
                 if route.stops[i][0] != route.stops[i+1][0]:
                     route.stops[i], route.stops[i+1] = route.stops[i+1], route.stops[i]
@@ -150,18 +161,35 @@ class Solution:
     
     def insertUnmatched(self):
         for rider in self.unmatched:
-            ...#probaj ga negde ubaciti - slično ka inicijalizacija
-            for driver in self.routes:
-                if driver.taken + rider.numOfPassengers <= driver.capacity: #putnik stane u auto
-                   if driver.depTime < rider.depTime and driver.arrivalTime > rider.arrivalTime: #vremenski okvir je okej
-                       for stop in driver.stops:
-                           #provjeri dal može
-                           ...
+            self.tryToInsert(rider)
 
-    def tryToInsert(self, rider, routeIndex = -1):
-        for route in self.routes:
-            if self.routes.index(route) != routeIndex:
-                ...
+    def tryToInsert(self, rider, routeIndex = -1): #probaj ga negde staviti
+        for driver in self.routes:
+            if self.routes.index(driver) != routeIndex:
+                for i in range(len(driver.stops)-1):
+                    if driver.compareTime(rider, i, 0) and driver.checkCapacity(rider.numOfPassengers, i):
+                            driver.stops.insert(i+1, [rider,rider.start,0]) #na pravi indeks između i i i+1
+                            k = i+1
+                            inserted = True
+                            break
+                    if not inserted:
+                        if driver.calculateTakenSeats() + rider.numOfPassengers <= driver.capacity:
+                            driver.stops.append([rider,rider.start,0])
+                            driver.stops.append([rider,rider.end,1])
+                    else:
+                        inserted = False
+                        for j in range(k, len(driver.stops) - 1): #di buš ga ostavil
+                            if self.compareTime(rider, j, 1):
+                                driver.stops.insert(j+1, [rider,rider.end,1]) #na pravi indeks
+                                inserted = True
+                                return True
+                        if not inserted:
+                            driver.stops.append([rider,rider.end,1])
+                            return True
         return False
+    
+    def calcTaken(self):
+        for driver in self.routes:
+            driver.calculateTakenSeats()
 
 
