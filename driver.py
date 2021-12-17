@@ -1,5 +1,5 @@
 class Driver:
-    def __init__(self, data = []):
+    def __init__(self, distMatrix = [], timeMatrix = [], data = []):
         self.id = 0
         self.start = 0
         self.end = 0
@@ -8,6 +8,8 @@ class Driver:
         self.capacity = 0
         self.taken = 0
         self.stops = [] #stanice po putu - lista uređenih trojki (rider, point, c \in {0,1}) (0 - tu ga pokupim, 1 - tu ga ostavim)
+        self.D = distMatrix
+        self.T = timeMatrix
         if len(data):
             self.initialize(data)
     
@@ -30,19 +32,23 @@ class Driver:
         new.capacity = self.capacity
         new.taken = self.taken
         new.stops = self.stops.copy()
+        new.D = self.D
+        new.T = self.T
         return new
         
     
     def calcDistance(self): #duljina puta
-        dist = D[self.start][self.stops[0][1]]
+        if len(self.stops) == 0:
+            return self.D[self.start][self.end]
+        dist = self.D[self.start][self.stops[0][1]]
         for i in range(len(self.stops)-1):
-            dist += D[self.stops[i][1]][self.stops[i+1][1]] # D - matrica takva da D[i][j] == udaljenost između stanica i i j
-        dist += D[self.stops[len(self.stops)-1]][self.end]
+            dist += self.D[self.stops[i][1]][self.stops[i+1][1]] # D - matrica takva da D[i][j] == udaljenost između stanica i i j
+        dist += self.D[self.stops[len(self.stops)-1][1]][self.end]
         return dist
     
   
 
-    def compareTime(self, rider,index, inOrOut):
+    def compareTime(self, rider, index, inOrOut):
         if inOrOut == 0:
             time = rider.depTime
         else:
