@@ -5,27 +5,27 @@ from driver import *
 import random
 
 class Population:
-    def __init__(self, riderData, driverData): 
+    def __init__(self, riderData, driverData, distMatrix, timeMarix): 
         self.solutions = []
         self.bestValue = 0
         self.bestSolution = 0
         self.riders = []
         self.drivers = []
-        self.initialize(riderData, driverData)
+        self.initialize(riderData, driverData, distMatrix, timeMarix)
 
-    def initialize(self, riderData, driverData): #inicijaliziraj početnu populaciju
+    def initialize(self, riderData, driverData, distMatrix, timeMatrix): #inicijaliziraj početnu populaciju
         #riderData - lista u kojoj su liste s podacima za svakog putnika(id, start, end, depTime, arrTime, brojPutnika)
         #driverData - lista u kojoj su liste s podacima za svakog vozača(id, start, end, depTime, arrTime, kapacitet)
         for data in riderData:
             self.riders.append(Rider(data))
         for data in driverData:
-            self.drivers.append(Driver(data))
+            self.drivers.append(Driver(distMatrix, timeMatrix, data))
         while len(self.solutions) < NUM_OF_SOLUTIONS:
             #for driver in self.drivers:
              #   driver.stops = []
             driverCopy = [driver.copy() for driver in self.drivers]
             riderCopy = [rider.copy() for rider in self.riders]
-            solution = Solution(riderCopy, driverCopy)
+            solution = Solution(distMatrix,timeMatrix, riderCopy, driverCopy)
             solution.initialize()
             self.solutions.append(solution)
     
@@ -60,7 +60,7 @@ class Population:
                 minVal = solution.fitness
                 secMinSol = solution
         return minSol, secMinSol
-        riderData, driverData
+
     def rouletteWheelSelection(self):
         sumOfFitness = 0
         for solution in self.solutions:
@@ -72,6 +72,10 @@ class Population:
             if sum > r:
                 return solution
         return self.solutions[len(self.solutions)-1]
+    
+    def evaluate(self):
+        for solution in self.solutions:
+            solution.calculateFitness()
         
 
     

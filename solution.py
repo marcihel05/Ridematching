@@ -1,14 +1,17 @@
 import random
 from driver import *
 from settings import *
+from matrices import *
 
 class Solution:
-    def __init__(self, riders = [], drivers = []):
+    def __init__(self, distMatrix = [],timeMatrix = [], riders = [], drivers = []):
         self.routes = drivers.copy() #lista Drivera
         self.riders = riders.copy() #lista svih Ridera
         self.fitness = 0
         self.unmatched = [] #lista Ridera koji se ne voze
         self.numOfRoutes = 0 #len(self.routes)
+        self.D = distMatrix
+        self.T = timeMatrix
     
     def initialize(self): #inicijaliziraj početno rješenje - posloži driver.stops i unmatched stops #DODATI PROVJERU JE LI FIZIČKI MOGUĆE DOĆI S JEDNE LOKACIJE NA SLJEDEĆU U ZADANOM VREMENU
        ridersCopy = self.riders.copy()
@@ -53,8 +56,8 @@ class Solution:
             
         
     def mutate(self):
-        self.pushBackward()
-        self.pushForward()
+        #self.pushBackward()
+        #self.pushForward()
         self.removeInsert()
         self.transfer()
         self.swap()
@@ -62,7 +65,7 @@ class Solution:
     def pushBackward(self): #first mutation operator
         for route in self.routes:
             r = random.random()
-            if r < MUTATION_RATE: #mutiraj
+            if r < MUTATION_RATE and len(route.stops) > 0: #mutiraj
                 i = random.randrange(len(route.stops))
 
                 route.calculateTakenSeats()
@@ -70,7 +73,7 @@ class Solution:
     def pushForward(self): #seconds mutation operator
         for route in self.routes:
             r = random.random()
-            if r < MUTATION_RATE: #mutiraj
+            if r < MUTATION_RATE and len(route.stops) > 0: #mutiraj
                 i = random.randrange(len(route.stops))
                 
                 route.calculateTakenSeats()
@@ -78,7 +81,7 @@ class Solution:
     def removeInsert(self): #third mutation operator
         for route in self.routes:
             r = random.random()
-            if r < MUTATION_RATE: #mutiraj
+            if r < MUTATION_RATE and len(route.stops) > 0:  #mutiraj
                 i = random.randrange(len(route.stops))
                 stop = route.stops[i]
                 self.unmatched.append(stop[0])
@@ -92,9 +95,9 @@ class Solution:
     def transfer(self): #fourth mutation operator
         for route in self.routes:
             r = random.random()
-            if r < MUTATION_RATE: #mutiraj
+            if r < MUTATION_RATE and len(route.stops) > 0: #mutiraj
                 i = random.randrange(len(route.stops))
-                if self.tryToInsert(self.routes.index(route), route.stops[i][0]):
+                if self.tryToInsert(route.stops[i][0], self.routes.index(route)):
                     route.stops.remove(route.stops[i])
                     route.stops.remove([route.stops[i][0], route.stops[i][0].end, 1])
                 route.calculateTakenSeats()
@@ -102,13 +105,13 @@ class Solution:
     def swap(self): #fifth mutation operator
         for route in self.routes:
             r = random.random()
-            if r < MUTATION_RATE: #mutiraj
+            if r < MUTATION_RATE and len(route.stops) > 0: #mutiraj
                 i = random.randrange(len(route.stops))
                 if route.stops[i][0] != route.stops[i+1][0]:
                     route.stops[i], route.stops[i+1] = route.stops[i+1], route.stops[i]
 
     def crossover(self, otherSolution):
-        newSolution1, newSolution2 = self, otherSolution
+        newSolution1, newSolution2 = self.copy(), otherSolution.copy()
         routeIndex = random.randrange(self.numOfRoutes)
         for i in range(routeIndex, len(self.routes)):
             newSolution1.routes[i], newSolution2.routes[i] = newSolution2.routes[i], newSolution1.routes[i]
@@ -128,10 +131,10 @@ class Solution:
         servedReq = delta*(len(self.riders) - len(self.unmatched))
         for driver in self.routes:
             dist += driver.calcDistance()
-            time += T[driver.id][driver.end] - T[driver.id][driver.start] #T - matrica taka da T[i][j] = vrijeme u koje je vozač s id-em i došao na destinaciju j
+            time += abs(T[driver.id][driver.end] - T[driver.id][driver.start]) #T - matrica taka da T[i][j] = vrijeme u koje je vozač s id-em i došao na destinaciju j
             for stop in driver.stops:
                 if stop[2] == 0:
-                    riderTime += T[driver.id][stop[0].end] - T[driver.id][stop[1]]
+                    riderTime += abs(T[driver.id][stop[0].end] - T[driver.id][stop[1]])
         dist*=alpha
         time*=beta
         riderTime*=delta
@@ -139,21 +142,19 @@ class Solution:
         val+=time
         val += riderTime
         val+=servedReq
-        return val
+        self.fitness = val
 
     def checkIfFeasibleAfterCrossAndFix(self, routeIndex): #pogledaj dal više vozača ne vozi istog putnika i makni ako ima toga
         for i in range(routeIndex):
             for stop1 in self.routes[i].stops:
                 if stop1[2] == 0:
-                    rider = stop2
+                    rider = stop1
                     for j in range(routeIndex,len(self.routes)):
                         for stop2 in self.routes[j].stops:
                             if stop2 == rider:
-                                stop2.remove(rider)
-                                stop2.remove([rider[0], rider[1],1])
+                                self.routes[j].stops.remove(rider)
+                                self.routes[j].stops.remove([rider[0], rider[1],1])
 
-            
-        
     
     def modifyUnmatched(self):
         unmatchedNew = []
@@ -172,6 +173,7 @@ class Solution:
             self.tryToInsert(rider)
 
     def tryToInsert(self, rider, routeIndex = -1): #probaj ga negde staviti
+        inserted = False
         for driver in self.routes:
             if self.routes.index(driver) != routeIndex:
                 for i in range(len(driver.stops)-1):
@@ -187,7 +189,7 @@ class Solution:
                     else:
                         inserted = False
                         for j in range(k, len(driver.stops) - 1): #di buš ga ostavil
-                            if self.compareTime(rider, j, 1):
+                            if driver.compareTime(rider, j, 1):
                                 driver.stops.insert(j+1, [rider,rider.end,1]) #na pravi indeks
                                 inserted = True
                                 return True
@@ -199,5 +201,17 @@ class Solution:
     def calcTaken(self):
         for driver in self.routes:
             driver.calculateTakenSeats()
+    
+
+    def copy(self):
+        new = Solution()
+        new.unmatched = self.unmatched.copy()
+        new.riders = self.riders.copy()
+        new.routes = [driver.copy() for driver in self.routes]
+        new.fitness = self.fitness
+        new.numOfRoutes = self.numOfRoutes
+        new.D = self.D
+        new.T = self.T
+        return new
 
 

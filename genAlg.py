@@ -3,8 +3,8 @@ from solution import *
 
 from settings import *
 
-def genAlg(riderData, driverData):
-    population = Population(riderData, driverData)
+def genAlg(riderData, driverData, distMatrix, timeMatrix):
+    population = Population(riderData, driverData, distMatrix, timeMatrix)
     numOfIt = 1
     valueOfFunc = [] #lista vrijednosti funkcije po iteracijama
     bestSolutions = []
@@ -26,4 +26,5 @@ def genAlg(riderData, driverData):
             newRoutes.append(child2)
         population.routes = newRoutes
         numOfIt+=1
+    return valueOfFunc, bestSolutions
         
