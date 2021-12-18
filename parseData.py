@@ -20,7 +20,6 @@ def parseData(data): # data - txt file
         driver.append((float(driverSplit[8]), float(driverSplit[9])))
         #earliest dep time
         driver.append((int(driverSplit[5]), int(driverSplit[6])))
-        print(driver[3])
         #latest ar time
         driver.append((float(driverSplit[10]), float(driverSplit[11])))
         driver.append(5)       #iz rada
