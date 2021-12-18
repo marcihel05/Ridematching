@@ -1,7 +1,6 @@
 import random
 from driver import *
 from settings import *
-from matrices import *
 
 class Solution:
     def __init__(self, distMatrix = [],timeMatrix = [], riders = [], drivers = []):
@@ -13,7 +12,7 @@ class Solution:
         self.D = distMatrix
         self.T = timeMatrix
     
-    def initialize(self): #inicijaliziraj početno rješenje - posloži driver.stops i unmatched stops #DODATI PROVJERU JE LI FIZIČKI MOGUĆE DOĆI S JEDNE LOKACIJE NA SLJEDEĆU U ZADANOM VREMENU
+    def initialize(self): #inicijaliziraj početno rješenje - posloži driver.stops i unmatched stops
        ridersCopy = self.riders.copy()
        random.shuffle(self.routes)
        #print("Next solution")
@@ -21,19 +20,29 @@ class Solution:
         #   print("Start")
           # driver.printDriver()
            for i in range(len(ridersCopy)):
-         #      print(i)
                r = random.randrange(len(ridersCopy))
                rider = ridersCopy[r]
-               if driver.depTime < rider.depTime and driver.arrivalTime > rider.arrivalTime: #vremenski okvir je okej
-                    inserted = False
-                    for i in range(-1, len(driver.stops) - 1): #di buš ga pokupil
-                        if driver.compareTime(rider, i, 0) and driver.checkCapacity(rider.numOfPassengers, i):
-                            driver.stops.insert(i+1, [rider,rider.start,0]) #na pravi indeks između i i i+1
-                            k = i+1
-                            inserted = True
-                            break
+               inserted = False
+               if driver.depTime[0] < rider.depTime[1] and driver.arrivalTime[1] > rider.arrivalTime[0]: #vremenski okvir je okej
+                    for i in range(-1, len(driver.stops)): #di buš ga pokupil
+                        if driver.compareTime(rider, i, 0): #može vremenski na index i
+                            k = i+1 #ubaci na k
+                            for j in range(k, len(driver.stops)): #di buš ga ostavil
+                                if driver.compareTime(rider, j, 1):
+                                    if driver.checkCapacity(rider.numOfPassengers, i) and driver.checkDistance(rider, k, j+1) and driver.checkTime(rider, k, j+1):
+                                        time1 = driver.stops[k-1][3] + self.T[driver.stops[k-1][1]][rider.start]
+                                        time2 = driver.stops[j][3] + self.T[driver.stops[j][1]][rider.end]
+                                        driver.stops.insert(k, [rider, rider.start, 0, time1, "w"])
+                                        driver.stops.insert(j+1, [rider, rider.end, 1, time2, "w"])
+                                        inserted = True
+                                        driver.adjustTimes()
+                                        break # prekida for j
+                            if inserted: 
+                                break #prekida for i
+
+
                     if not inserted:
-                        if driver.calculateTakenSeats() + rider.numOfPassengers <= driver.capacity:
+                        if driver.calculateTakenSeats() + rider.numOfPassengers <= driver.capacity and driver.checkDistance() and driver.checkTime():
                             driver.stops.append([rider,rider.start,0])
                             driver.stops.append([rider,rider.end,1])
                             ridersCopy.pop(r)
