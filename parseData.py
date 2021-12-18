@@ -19,15 +19,9 @@ def parseData(data): # data - txt file
         driver.append((float(driverSplit[3]), float(driverSplit[4])))
         driver.append((float(driverSplit[8]), float(driverSplit[9])))
         #earliest dep time
-<<<<<<< HEAD
         driver.append((int(driverSplit[5]), int(driverSplit[6]))
         #latest ar time
         driver.append((float(driverSplit[10]), float(driverSplit[11]))
-=======
-        driver.append(int(driverSplit[5]))
-        #latest ar time
-        driver.append(float(driverSplit[11]))
->>>>>>> d16e4f6cfde84fe2407312202fc7090365378f93
         driver.append(5)       #iz rada
         driverData.append(driver)
 
