@@ -3,6 +3,7 @@
 def parseData(data): # data - txt file
     riderData = []
     driverData = []
+    lokacije = []
     next(data)          #skip prvu liniju - uk. br. zahtjeva
     l = data.readline().split()
     numOfDrivers = int(l[4])
@@ -16,11 +17,14 @@ def parseData(data): # data - txt file
         driver = []
         driver.append(int(driverSplit[0]))
         #koordinate start i end
-        driver.append((float(driverSplit[3]), float(driverSplit[4])))
-        driver.append((float(driverSplit[8]), float(driverSplit[9])))
-        #earliest dep time
+        #matrica
+        lokacije.append((float(driverSplit[3]), float(driverSplit[4])))
+        driver.append(len(lokacije)-1)
+        lokacije.append((float(driverSplit[8]), float(driverSplit[9])))
+        driver.append(len(lokacije)-1)
+        #dep time window
         driver.append((int(driverSplit[5]), int(driverSplit[6])))
-        #latest ar time
+        #ar time window
         driver.append((float(driverSplit[10]), float(driverSplit[11])))
         driver.append(5)       #iz rada
         driverData.append(driver)
@@ -29,10 +33,12 @@ def parseData(data): # data - txt file
         riderSplit = data.readline().split()
         rider = []
         rider.append(int(riderSplit[0]))
-        rider.append((float(riderSplit[3]), float(riderSplit[4])))
-        rider.append((float(riderSplit[8]), float(riderSplit[9])))
+        lokacije.append((float(driverSplit[3]), float(driverSplit[4])))
+        rider.append(len(lokacije)-1)
+        lokacije.append((float(driverSplit[8]), float(driverSplit[9])))
+        rider.append(len(lokacije)-1)
         rider.append((int(riderSplit[5]), int(riderSplit[6])))
         rider.append((float(riderSplit[10]), float(riderSplit[11])))
         riderData.append(rider)
 
-    return (riderData, driverData)
+    return riderData, driverData, lokacije
