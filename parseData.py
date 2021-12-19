@@ -33,9 +33,9 @@ def parseData(data): # data - txt file
         riderSplit = data.readline().split()
         rider = []
         rider.append(int(riderSplit[0]))
-        lokacije.append((float(driverSplit[3]), float(driverSplit[4])))
+        lokacije.append((float(riderSplit[3]), float(riderSplit[4])))
         rider.append(len(lokacije)-1)
-        lokacije.append((float(driverSplit[8]), float(driverSplit[9])))
+        lokacije.append((float(riderSplit[8]), float(riderSplit[9])))
         rider.append(len(lokacije)-1)
         rider.append((int(riderSplit[5]), int(riderSplit[6])))
         rider.append((float(riderSplit[10]), float(riderSplit[11])))

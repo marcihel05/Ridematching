@@ -2,7 +2,7 @@ from settings import *
 
 def calcDistance(a, b):
     from math import sin, cos, sqrt, atan2, radians
-    R = 6373.0 # approx radius of Earth
+    R = 6.373 # approx radius of Earth
     lon1 = radians(a[0])
     lat1 = radians(a[1])
     lon2 = radians(b[0])
@@ -16,9 +16,10 @@ def calcDistance(a, b):
     return R*c
 
 def distances(locations):
+    #print(locations)
     distance_between_locations = list()
     for i in range(len(locations)):
-        pom_list = list()
+        pom_list = []
         for j in range(len(locations)):
             pom_list.append(calcDistance(locations[i], locations[j]))
         distance_between_locations.append(pom_list)
