@@ -37,8 +37,7 @@ class Rider:
         print(listRider)
     
     def toString(self):
-        ret = str(self.id) + " " + "(" + str(self.start[0]) + ", " + str(self.start[1]) + ") (" 
-        ret += str(self.end[0]) + ", " + str(self.end[1]) + ") (" 
+        ret = str(self.id) + " " +  str(self.start) + " " + str(self.end) + " ("
         ret += str(self.depTime[0]) + ", " + str(self.depTime[1]) + ") ("
         ret += str(self.arrivalTime[0]) + ", " +str(self.arrivalTime[1]) + ") " + str(self.numOfPassengers)
         return ret

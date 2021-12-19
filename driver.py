@@ -9,13 +9,12 @@ class Driver:
         self.arrivalTime = 0
         self.capacity = 0
         self.taken = 0
-        self.stops = [] #stanice po putu - lista uređenih trojki (rider, point, c \in {0,1}, vrijeme dolaska na point, vrijeme čekanja) (0 - tu ga pokupim, 1 - tu ga ostavim)
+        self.stops = [] #stanice po putu - lista uređenih petorki (rider, point, c \in {0,1}, vrijeme dolaska na point, vrijeme čekanja) (0 - tu ga pokupim, 1 - tu ga ostavim)
         self.D = distMatrix
         self.T = timeMatrix
         self.maxDist = 0
         self.maxTime = 0
-        if len(data):
-            self.initialize(data)
+        if len(data):self.initialize(data)
     
     def initialize(self, data):
         self.id = data[0]
@@ -46,8 +45,7 @@ class Driver:
         
     
     def calcDistance(self): #duljina puta
-        if len(self.stops) == 0:
-            return self.D[self.start][self.end]
+        if len(self.stops) == 0: return self.D[self.start][self.end]
         dist = self.D[self.start][self.stops[0][1]]
         for i in range(len(self.stops)-1):
             dist += self.D[self.stops[i][1]][self.stops[i+1][1]] # D - matrica takva da D[i][j] == udaljenost između stanica i i j
@@ -60,22 +58,25 @@ class Driver:
         route.insert(indIn,[rider, rider.start, 0, 0 , "w"] )
         route.insert(indOut,[rider, rider.end, 1, 0, "w"] )
         dist = self.D[self.start][route[0][1]]
+        #print(self.start)
+        #print(route[0][1])
+        #print(dist)
         for i in range(len(route)-1):
             dist += self.D[route[i][1]][route[i+1][1]]
-        dist += self.D[route[len(route)-1]][self.end]
+        dist += self.D[route[len(route)-1][1]][self.end]
         return dist <= self.maxDist
     
     def checkTime(self, rider, indIn, indOut):
         route = self.stops.copy()
-        if indIn == 0:
-            time1 = self.depTime[0] + self.T[self.start][rider.start]
-        else:
-            time1 = self.stops[indIn -1][3] + self.T[self.stops[indIn -1][1]][rider.start]
+        if indIn == 0: time1 = self.depTime[0] + self.T[self.start][rider.start]
+        else: time1 = route[indIn -1][3] + self.T[route[indIn -1][1]][rider.start]
         route.insert(indIn, [rider, rider.start, 0, time1, "w"] )
-        time2 = self.stops[indOut-1][3] + self.T[self.stops[indOut-1][1]][rider.end]
+        time2 = route[indOut-1][3] + self.T[route[indOut-1][1]][rider.end]
         route.insert(indOut, [rider, rider.end, 1, time2, "w"] )
         route = self.adjustTimesCopy(route)
-        if route[len(route) -1][3] + self.T[route[len(route) -1][1]][self.end] > self.maxTime:
+        if route[len(route) -1][3] + self.T[route[len(route) -1][1]][self.end] - self.depTime[0] > self.maxTime:
+            print(route[len(route) -1][3] + self.T[route[len(route) -1][1]][self.end] - self.depTime[0])
+            print(self.maxTime)
             return False
         for i in range(len(route)-1):
             if route[i][2] == 0: #tu kupimo putnik
@@ -123,25 +124,26 @@ class Driver:
             copy[i+1][3] = copy[i][3] + self.T[copy[i+1][1]][copy[i][1]]
         return copy
 
-    def checkCapacity(self, numOfPass, index): #POPRAVITI da provjerava za sve nakon umetanja
-        if index == -1:
-            return True
+    def checkCapacity(self, numOfPass, index):
         cap = 0
         for i in range(index+1):
-            if self.stops[i][2] == 0:
-                cap += self.stops[i][0].numOfPassengers
-            else:
-                cap -= self.stops[i][0].numOfPassengers
-        return cap + numOfPass <= self.capacity
-        
+            if self.stops[i][2] == 0: cap += self.stops[i][0].numOfPassengers
+            else: cap -= self.stops[i][0].numOfPassengers
+        cap += numOfPass
+        if cap >= self.capacity: return False
+
+        for i in range(index+1, len(self.stops)):
+            if self.stops[i][2] == 0: cap += self.stops[i][0].numOfPassengers
+            else: cap -= self.stops[i][0].numOfPassengers
+            if cap >= self.capacity: return False
+        return True
+
     
     def calculateTakenSeats(self):
         tkn = 0
         for stop in self.stops:
-            if stop[2] == 0:
-                tkn += stop[0].numOfPassengers
-            else:
-                tkn -= stop[0].numOfPassengers
+            if stop[2] == 0: tkn += stop[0].numOfPassengers
+            else: tkn -= stop[0].numOfPassengers
         self.taken = tkn
         return tkn
     
