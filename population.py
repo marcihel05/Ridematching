@@ -17,12 +17,10 @@ class Population:
         #riderData - lista u kojoj su liste s podacima za svakog putnika(id, start, end, depTime, arrTime, brojPutnika)
         #driverData - lista u kojoj su liste s podacima za svakog vozača(id, start, end, depTime, arrTime, kapacitet)
         for data in riderData:
-            self.riders.append(Rider(data))
+            self.riders.append(Rider(data, timeMatrix))
         for data in driverData:
             self.drivers.append(Driver(distMatrix, timeMatrix, data))
         while len(self.solutions) < NUM_OF_SOLUTIONS:
-            #for driver in self.drivers:
-             #   driver.stops = []
             driverCopy = [driver.copy() for driver in self.drivers]
             riderCopy = [rider.copy() for rider in self.riders]
             solution = Solution(distMatrix,timeMatrix, self.riders, driverCopy)
@@ -50,10 +48,8 @@ class Population:
                 minVal = solution.fitness
         self.bestValue = minVal
         self.bestSolution = minSol
-        if minSol == self.solutions[0]:
-            secMinSol = self.solutions[1]
-        else:
-            secMinSol = self.solutions[0]
+        if minSol == self.solutions[0]: secMinSol = self.solutions[1]
+        else: secMinSol = self.solutions[0]
         minVal = secMinSol.fitness
         for solution in self.solutions:
             if solution.fitness < minVal and solution != minSol:
@@ -69,8 +65,7 @@ class Population:
         sum = 0
         for solution in self.solutions:
             sum += (solution.fitness/sumOfFitness)
-            if sum > r:
-                return solution
+            if sum > r: return solution
         return self.solutions[len(self.solutions)-1]
     
     def evaluate(self):
