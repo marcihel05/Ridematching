@@ -91,7 +91,7 @@ class Solution:
                 if ind > -1:
                     route.stops.pop(ind)
                 for rider in self.unmatched:
-                    self.tryToInsert(rider)
+                    self.tryToInsert2(rider)
                 route.calculateTakenSeats()
                 
     
@@ -181,26 +181,76 @@ class Solution:
         for driver in self.routes:
             if self.routes.index(driver) != routeIndex:
                 for i in range(len(driver.stops)-1):
-                    if driver.compareTime(rider, i, 0) and driver.checkCapacity(rider.numOfPassengers, i):
-                            driver.stops.insert(i+1, [rider,rider.start,0]) #na pravi indeks između i i i+1
-                            k = i+1
-                            inserted = True
-                            break
+                    if driver.compareTime(rider, i, 0) and driver.checkCapacity(rider.numOfPassengers, i):      #PROVJERITI
+                        if i == 0:
+                            time = driver.depTime[0] + self.T[driver.start][rider.start]
+                        else:
+                            time = driver.stops[i][3] + self.T[driver.stops[i][1]][rider.start]
+                        driver.stops.insert(i+1, [rider,rider.start,0,time,"w"]) #na pravi indeks između i i i+1
+                        driver.adjustTimes()
+                        k = i+1
+                        inserted = True
+                        break
                     if not inserted:
                         if driver.calculateTakenSeats() + rider.numOfPassengers <= driver.capacity:
-                            driver.stops.append([rider,rider.start,0])
-                            driver.stops.append([rider,rider.end,1])
+                            time = driver.stops[len(driver.stops)-1][3] + self.T[driver.stops[len(driver.stops)-1][1]][rider.start]
+                            driver.stops.append([rider,rider.start,0,time,"w"])
+                            time = driver.stops[len(driver.stops)-1][3] + self.T[driver.stops[len(driver.stops)-1][1]][rider.end]
+                            driver.stops.append([rider,rider.end,1,time,"w"])
+                            driver.adjustTimes()
                             return True
                     else:
                         inserted = False
                         for j in range(k, len(driver.stops) - 1): #di buš ga ostavil
                             if driver.compareTime(rider, j, 1):
-                                driver.stops.insert(j+1, [rider,rider.end,1]) #na pravi indeks
+                                time = driver.stops[j][3] + self.T[driver.stops[j][1]][rider.end]
+                                driver.stops.insert(j+1, [rider,rider.end,1,time,"w"]) #na pravi indeks
                                 inserted = True
+                                driver.adjustTimes()
                                 return True
                         if not inserted:
-                            driver.stops.append([rider,rider.end,1])
+                            time = driver.stops[len(driver.stops)-1][3] + self.T[driver.stops[len(driver.stops)-1][1]][rider.end]
+                            driver.stops.append([rider,rider.end,1,time,"w"])
+                            driver.adjustTimes()
                             return True
+        return False
+
+    def tryToInsert2(self, rider, driver, routeIndex = -1): #probaj ga negde staviti - POPRAVITI
+        inserted = False
+        if self.routes.index(driver) != routeIndex:
+            for i in range(len(driver.stops)-1):
+                if driver.compareTime(rider, i, 0) and driver.checkCapacity(rider.numOfPassengers, i):      #PROVJERITI
+                    if i == 0:
+                        time = driver.depTime[0] + self.T[driver.start][rider.start]
+                    else:
+                        time = driver.stops[i][3] + self.T[driver.stops[i][1]][rider.start]
+                    driver.stops.insert(i+1, [rider,rider.start,0,time,"w"]) #na pravi indeks između i i i+1
+                    driver.adjustTimes()
+                    k = i+1
+                    inserted = True
+                    break
+                if not inserted:
+                    if driver.calculateTakenSeats() + rider.numOfPassengers <= driver.capacity:
+                        time = driver.stops[len(driver.stops)-1][3] + self.T[driver.stops[len(driver.stops)-1][1]][rider.start]
+                        driver.stops.append([rider,rider.start,0,time,"w"])
+                        time = driver.stops[len(driver.stops)-1][3] + self.T[driver.stops[len(driver.stops)-1][1]][rider.end]
+                        driver.stops.append([rider,rider.end,1,time,"w"])
+                        driver.adjustTimes()
+                        return True
+                else:
+                    inserted = False
+                    for j in range(k, len(driver.stops) - 1): #di buš ga ostavil
+                        if driver.compareTime(rider, j, 1):
+                            time = driver.stops[j][3] + self.T[driver.stops[j][1]][rider.end]
+                            driver.stops.insert(j+1, [rider,rider.end,1,time,"w"]) #na pravi indeks
+                            inserted = True
+                            driver.adjustTimes()
+                            return True
+                    if not inserted:
+                        time = driver.stops[len(driver.stops)-1][3] + self.T[driver.stops[len(driver.stops)-1][1]][rider.end]
+                        driver.stops.append([rider,rider.end,1,time,"w"])
+                        driver.adjustTimes()
+                        return True
         return False
     
     def calcTaken(self):
