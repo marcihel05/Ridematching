@@ -1,11 +1,15 @@
+from settings import *
+
 class Rider:
-    def __init__(self, data=[]):
+    def __init__(self, data=[], timeMatrix = []):
         self.id = 0
-        self.start = 0 
-        self.end = 0
-        self.depTime = 0
-        self.arrivalTime = 0
-        self.numOfPassengers = 0
+        self.start = () 
+        self.end = ()
+        self.depTime = ()
+        self.arrivalTime = ()
+        self.numOfPassengers = 1
+        self.maxTime = 0
+        self.T = timeMatrix
         if len(data):
             self.initialize(data)
     def initialize(self, data):
@@ -14,7 +18,7 @@ class Rider:
         self.end = data[2]
         self.depTime = data[3]
         self.arrivalTime = data[4]
-        self.numOfPassengers = data[5]
+        self.maxTime = AT + BT * self.T[self.start][self.end]
     
     def copy(self):
         new = Rider()
@@ -24,6 +28,8 @@ class Rider:
         new.depTime = self.depTime
         new.arrivalTime = self.arrivalTime
         new.numOfPassengers = self.numOfPassengers
+        new.maxTime = self.maxTime
+        new.T = self.T
         return new
     
     def printRider(self):
@@ -31,5 +37,8 @@ class Rider:
         print(listRider)
     
     def toString(self):
-        return str(self.id) + " " + str(self.start) + " " + str(self.end) + " " + self.depTime + " " + self.arrivalTime + " " + str(self.numOfPassengers)
+        ret = str(self.id) + " " +  str(self.start) + " " + str(self.end) + " ("
+        ret += str(self.depTime[0]) + ", " + str(self.depTime[1]) + ") ("
+        ret += str(self.arrivalTime[0]) + ", " +str(self.arrivalTime[1]) + ") " + str(self.numOfPassengers)
+        return ret
     
