@@ -17,6 +17,7 @@ class Solution:
        random.shuffle(self.routes)
        #print("Next solution")
        for driver in self.routes:
+           #print("ja sam novi vozac")
         #   print("Start")
           # driver.printDriver()
            for l in range(len(ridersCopy)):
@@ -91,7 +92,7 @@ class Solution:
                 if ind > -1:
                     route.stops.pop(ind)
                 for rider in self.unmatched:
-                    self.tryToInsert(rider)
+                    self.tryToInsert2(rider, route)
                 route.calculateTakenSeats()
                 
     
@@ -166,8 +167,11 @@ class Solution:
         for rider in self.riders:
             exists = False
             for route in self.routes:
-                if route.stops.count([rider, rider.start,0]) > 0:
-                    exists = True
+                for stop in route.stops:
+                    if rider.id == stop[0].id:
+                        exists = True
+                        break #prekini for stop
+                if exists: break #prekini for route
             if not exists:
                 unmatchedNew.append(rider)
         self.unmatched = unmatchedNew
@@ -177,31 +181,57 @@ class Solution:
             self.tryToInsert(rider)
 
     def tryToInsert(self, rider, routeIndex = -1): #probaj ga negde staviti - POPRAVITI
-        inserted = False
         for driver in self.routes:
             if self.routes.index(driver) != routeIndex:
-                for i in range(len(driver.stops)-1):
-                    if driver.compareTime(rider, i, 0) and driver.checkCapacity(rider.numOfPassengers, i):
-                            driver.stops.insert(i+1, [rider,rider.start,0]) #na pravi indeks između i i i+1
-                            k = i+1
-                            inserted = True
-                            break
-                    if not inserted:
-                        if driver.calculateTakenSeats() + rider.numOfPassengers <= driver.capacity:
-                            driver.stops.append([rider,rider.start,0])
-                            driver.stops.append([rider,rider.end,1])
-                            return True
-                    else:
-                        inserted = False
-                        for j in range(k, len(driver.stops) - 1): #di buš ga ostavil
-                            if driver.compareTime(rider, j, 1):
-                                driver.stops.insert(j+1, [rider,rider.end,1]) #na pravi indeks
-                                inserted = True
-                                return True
-                        if not inserted:
-                            driver.stops.append([rider,rider.end,1])
-                            return True
+                if driver.depTime[0] < rider.depTime[1] and driver.arrivalTime[1] > rider.arrivalTime[0]: #vremenski okvir je okej
+                   if len(driver.stops) == 0:
+                       if rider.numOfPassengers <= driver.capacity and driver.checkDistance(rider, 0, 1) and driver.checkTime(rider, 0, 1):
+                           time1 = driver.depTime[0] + self.T[driver.start][rider.start]
+                           time2 = time1 + self.T[rider.start][rider.end]
+                           driver.stops.insert(0, [rider, rider.start, 0, time1, "w"])
+                           driver.stops.insert(1, [rider, rider.end, 1, time2, "w"])
+                           driver.adjustTimes()
+                           return True
+                       continue
+                   for i in range(-1, len(driver.stops)): #di buš ga pokupil
+                        if driver.compareTime(rider, i, 0): #može vremenski na index i
+                            k = i+1 #ubaci na k
+                            for j in range(k, len(driver.stops)): #di buš ga ostavil
+                                if driver.compareTime(rider, j, 1):
+                                    if driver.checkCapacity(rider.numOfPassengers, i) and driver.checkDistance(rider, k, j+1) and driver.checkTime(rider, k, j+1):
+                                        time1 = driver.stops[k-1][3] + self.T[driver.stops[k-1][1]][rider.start]
+                                        time2 = driver.stops[j][3] + self.T[driver.stops[j][1]][rider.end]
+                                        driver.stops.insert(k, [rider, rider.start, 0, time1, "w"])
+                                        driver.stops.insert(j+1, [rider, rider.end, 1, time2, "w"])
+                                        driver.adjustTimes()
+                                        return True
         return False
+
+    def tryToInsert2(self, rider, driver, routeIndex = -1): #probaj ga negde staviti - POPRAVITI
+        if self.routes.index(driver) != routeIndex:
+            if driver.depTime[0] < rider.depTime[1] and driver.arrivalTime[1] > rider.arrivalTime[0]: #vremenski okvir je okej
+                if len(driver.stops) == 0:
+                    if rider.numOfPassengers <= driver.capacity and driver.checkDistance(rider, 0, 1) and driver.checkTime(rider, 0, 1):
+                        time1 = driver.depTime[0] + self.T[driver.start][rider.start]
+                        time2 = time1 + self.T[rider.start][rider.end]
+                        driver.stops.insert(0, [rider, rider.start, 0, time1, "w"])
+                        driver.stops.insert(1, [rider, rider.end, 1, time2, "w"])
+                        driver.adjustTimes()
+                        return True
+                    return False
+                for i in range(-1, len(driver.stops)): #di buš ga pokupil
+                    if driver.compareTime(rider, i, 0): #može vremenski na index i
+                        k = i+1 #ubaci na k
+                        for j in range(k, len(driver.stops)): #di buš ga ostavil
+                            if driver.compareTime(rider, j, 1):
+                                if driver.checkCapacity(rider.numOfPassengers, i) and driver.checkDistance(rider, k, j+1) and driver.checkTime(rider, k, j+1):
+                                    time1 = driver.stops[k-1][3] + self.T[driver.stops[k-1][1]][rider.start]
+                                    time2 = driver.stops[j][3] + self.T[driver.stops[j][1]][rider.end]
+                                    driver.stops.insert(k, [rider, rider.start, 0, time1, "w"])
+                                    driver.stops.insert(j+1, [rider, rider.end, 1, time2, "w"])
+                                    driver.adjustTimes()
+                                    return True
+        return False    
     
     def calcTaken(self):
         for driver in self.routes:
