@@ -59,19 +59,38 @@ class Prozor(Frame):
         #for s in S:
             #print([driver.printDriver() for driver in s.routes])
             #print('end sol')
-        #primi nazad i prikazi graf(ove)
-
-        #test
-        koord_x = [self.podaci[0][0][1][0], self.podaci[0][0][2][0]]
-        koord_y = [self.podaci[0][0][1][1], self.podaci[0][0][2][1]]
-        #print(koord_x)
-        #print(koord_y)
-        x = [koord_x[0], koord_x[1]]
-        y = [koord_y[0], koord_y[1]]
-        labels = ['A','B']
-        #poziv grafa - ako radi
-        #print([x])
-        graf.main([x],[y],[labels])
+        
+        #PROVJERITI
+        i = 1
+        for s in S:
+            n = len(s.routes)   #broj drivera (routes) u solution (uzeti n-1!)
+            X = []
+            Y = []
+            L = []
+            for i in range(n-1):
+                x = []
+                y = []
+                l = []
+                x.append(self.koordinate[s.routes[i].start][0])
+                y.append(self.koordinate[s.routes[i].start][1])
+                l.append('d'+ str(s.routes[i].id) + '+')
+                for r in s.routes[i].stops:
+                    x.append(self.koordinate[r[i]][0])
+                    y.append(self.koordinate[r[i]][1])
+                    #d_id r_id +/- oznaka za svaku točku na putu
+                    if r[2]:
+                        c = '-'     #arrival
+                    else:
+                        c = '+'     #departure
+                    l.append('d'+ str(s.routes[i].id)+ ' r' + str(r.id) + c)
+                x.append(self.koordinate[s.routes[i].end][0])
+                y.append(self.koordinate[s.routes[i].end][1])
+                l.append('d'+ str(s.routes[i].id) + '-')
+                X.append(x)
+                Y.append(y)
+                L.append(l)
+            graf.main(X,Y,L,i)
+            i += 1
         
         print('ok')
         return
