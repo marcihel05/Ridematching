@@ -1,7 +1,10 @@
 
 from tkinter import *
+from parseData import *
+from distAndTime import *
+from genAlg import *
+from solution import *
 import graf
-import parseData
 import os
 
 class Prozor(Frame):
@@ -11,7 +14,11 @@ class Prozor(Frame):
         self.R = root
         self.R.title('')
         self.grid(rows = 10, columns = 10)      #moze i pomocu pack, sto ispadne urednije
-        self.podaci = []            #podatke prenosimo iz ucitaj u izracunaj
+        self.drivers = []           #podatke prenosimo iz ucitaj u izracunaj
+        self.riders = []
+        self.distMat = []
+        self.timeMat = []
+        self.koordinate = []
         self.kreirajSucelje()
         return
     
@@ -36,17 +43,22 @@ class Prozor(Frame):
         #pretpostavka da je se u istom direktoriju nalazi dir instances
         #s poddir instances_metadata koji sadrzi datoteke - mijenjati po potrebi
         f = open(os.path.join('./instances/instances_metadata', s), 'r')
-        self.podaci = parseData.parseData(f)
+        self.riders, self.drivers, self.koordinate = parseData(f)
         f.close()
-
-##        #test
-##        print('\n')
-##        print(self.podaci)
-##        print('\n')
+        self.distMat = distances(self.koordinate)
+        self.timeMat = times(self.koordinate, self.distMat)
+        print('ok')
         return
 
     def izracunaj(self):
-        #posalji podatke u algoritam - pokreni main sa self.podaci
+        value, S = genAlg(self.riders, self.drivers, self.distMat, self.timeMat)
+        #print(value)
+        for i in value:
+            print(i)
+        print('end val')
+        #for s in S:
+            #print([driver.printDriver() for driver in s.routes])
+            #print('end sol')
         #primi nazad i prikazi graf(ove)
 
         #test
@@ -60,6 +72,8 @@ class Prozor(Frame):
         #poziv grafa - ako radi
         #print([x])
         graf.main([x],[y],[labels])
+        
+        print('ok')
         return
 
     
