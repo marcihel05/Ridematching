@@ -75,14 +75,14 @@ class Prozor(Frame):
                 y.append(self.koordinate[s.routes[i].start][1])
                 l.append('d'+ str(s.routes[i].id) + '+')
                 for r in s.routes[i].stops:
-                    x.append(self.koordinate[r[i]][0])
-                    y.append(self.koordinate[r[i]][1])
+                    x.append(self.koordinate[r[1]][0])
+                    y.append(self.koordinate[r[1]][1])
                     #d_id r_id +/- oznaka za svaku točku na putu
                     if r[2]:
                         c = '-'     #arrival
                     else:
                         c = '+'     #departure
-                    l.append('d'+ str(s.routes[i].id)+ ' r' + str(r.id) + c)
+                    l.append('d'+ str(s.routes[i].id)+ ' r' + str(r[0].id) + c)
                 x.append(self.koordinate[s.routes[i].end][0])
                 y.append(self.koordinate[s.routes[i].end][1])
                 l.append('d'+ str(s.routes[i].id) + '-')
