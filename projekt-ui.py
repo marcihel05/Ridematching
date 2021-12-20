@@ -19,6 +19,7 @@ class Prozor(Frame):
         self.distMat = []
         self.timeMat = []
         self.koordinate = []
+        self.k_label = []
         self.kreirajSucelje()
         return
     
@@ -52,33 +53,36 @@ class Prozor(Frame):
         f.close()
         self.distMat = distances(self.koordinate)
         self.timeMat = times(self.koordinate, self.distMat)
+        self.k_label = ['' for i in range(len(self.koordinate))]
         self.vlabel.set('Ucitavanje uspjesno')
         return
 
     def izracunaj(self):
         value, S = genAlg(self.riders, self.drivers, self.distMat, self.timeMat)
-        #print(value)
-        for i in value:
-            print(i)
-        print('end val')
+        #for i in value:
+            #print(i)
+        #print('end val')
         #for s in S:
             #print([driver.printDriver() for driver in s.routes])
             #print('end sol')
         
-        #PROVJERITI
-        i = 1
+        br = 1
         for s in S:
             n = len(s.routes)   #broj drivera (routes) u solution (uzeti n-1!)
             X = []
             Y = []
+            I = set()
             L = []
             for i in range(n-1):
                 x = []
                 y = []
-                l = []
                 x.append(self.koordinate[s.routes[i].start][0])
                 y.append(self.koordinate[s.routes[i].start][1])
-                l.append('d'+ str(s.routes[i].id) + '+')
+                if self.k_label[s.routes[i].start] == '':
+                    self.k_label[s.routes[i].start] = 'd'+ str(s.routes[i].id) + '+'
+                else:
+                    self.k_label[s.routes[i].start] += '\nd'+ str(s.routes[i].id) + '+'
+                I.add(s.routes[i].start)
                 for r in s.routes[i].stops:
                     x.append(self.koordinate[r[1]][0])
                     y.append(self.koordinate[r[1]][1])
@@ -87,15 +91,25 @@ class Prozor(Frame):
                         c = '-'     #arrival
                     else:
                         c = '+'     #departure
-                    l.append('d'+ str(s.routes[i].id)+ ' r' + str(r[0].id) + c)
+                    if self.k_label[r[1]] == '':
+                        self.k_label[r[1]] = 'd'+ str(s.routes[i].id) + ' r' + str(r[0].id) + c
+                    else:
+                        self.k_label[r[1]] += '\nd'+ str(s.routes[i].id) + ' r' + str(r[0].id) + c
+                    I.add(r[1])
                 x.append(self.koordinate[s.routes[i].end][0])
                 y.append(self.koordinate[s.routes[i].end][1])
-                l.append('d'+ str(s.routes[i].id) + '-')
+                if self.k_label[s.routes[i].start] == '':
+                    self.k_label[s.routes[i].end] = 'd'+ str(s.routes[i].id) + '-'
+                else:
+                    self.k_label[s.routes[i].end] += '\nd'+ str(s.routes[i].id) + '-'
+                I.add(s.routes[i].end)
                 X.append(x)
                 Y.append(y)
-                L.append(l)
-            graf.main(X,Y,L,i)
-            i += 1
+            
+            for i in I:
+                L.append((self.koordinate[i], self.k_label[i]))
+            graf.main(X,Y,L,br)
+            br += 1
         
         print('ok')
         return
