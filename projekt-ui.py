@@ -33,6 +33,11 @@ class Prozor(Frame):
         self.option = OptionMenu(self, self.vchoice, *self.choices)
         self.option.grid(row = 0, column = 1)
         
+        self.vlabel = StringVar()
+        self.vlabel.set('')
+        self.L2 = Label(self, textvariable = self.vlabel)
+        self.L2.grid(row = 1, column = 0, columnspan = 2)
+        
         self.G1 = Button(self, text = 'Ucitaj', command = self.ucitaj).grid(row = 0, column = 2)
 
         self.G2 = Button(self, text = 'Izracunaj', command = self.izracunaj).grid(row = 1, column = 2)
@@ -47,7 +52,7 @@ class Prozor(Frame):
         f.close()
         self.distMat = distances(self.koordinate)
         self.timeMat = times(self.koordinate, self.distMat)
-        print('ok')
+        self.vlabel.set('Ucitavanje uspjesno')
         return
 
     def izracunaj(self):
