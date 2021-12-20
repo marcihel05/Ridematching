@@ -18,10 +18,18 @@ def parseData(data): # data - txt file
         driver.append(int(driverSplit[0]))
         #koordinate start i end
         #matrica
-        lokacije.append((float(driverSplit[3]), float(driverSplit[4])))
-        driver.append(len(lokacije)-1)
-        lokacije.append((float(driverSplit[8]), float(driverSplit[9])))
-        driver.append(len(lokacije)-1)
+        t = (float(driverSplit[3]), float(driverSplit[4]))
+        if lokacije.count(t):
+            driver.append(lokacije.index(t))
+        else:
+            lokacije.append(t)
+            driver.append(len(lokacije)-1)
+        t = (float(driverSplit[8]), float(driverSplit[9]))
+        if lokacije.count(t):
+            driver.append(lokacije.index(t))
+        else:
+            lokacije.append(t)
+            driver.append(len(lokacije)-1)
         #dep time window
         driver.append((int(driverSplit[5]), int(driverSplit[6])))
         #ar time window
@@ -33,10 +41,18 @@ def parseData(data): # data - txt file
         riderSplit = data.readline().split()
         rider = []
         rider.append(int(riderSplit[0]))
-        lokacije.append((float(riderSplit[3]), float(riderSplit[4])))
-        rider.append(len(lokacije)-1)
-        lokacije.append((float(riderSplit[8]), float(riderSplit[9])))
-        rider.append(len(lokacije)-1)
+        t = (float(riderSplit[3]), float(riderSplit[4]))
+        if lokacije.count(t):
+            rider.append(lokacije.index(t))
+        else:
+            lokacije.append(t)
+            rider.append(len(lokacije)-1)
+        t = (float(riderSplit[8]), float(riderSplit[9]))
+        if lokacije.count(t):
+            rider.append(lokacije.index(t))
+        else:
+            lokacije.append(t)
+            rider.append(len(lokacije)-1)
         rider.append((int(riderSplit[5]), int(riderSplit[6])))
         rider.append((float(riderSplit[10]), float(riderSplit[11])))
         riderData.append(rider)
