@@ -26,10 +26,11 @@ def distances(locations):
     return distance_between_locations
 
 def times(locations, distances):
+    from math import ceil
     time_between_locations = []
     for i in range(len(locations)):
         pom_list = list()
         for j in range(len(locations)):
-            pom_list.append(distances[i][j]/V)
+            pom_list.append(ceil(distances[i][j]/V))
         time_between_locations.append(pom_list)
     return time_between_locations

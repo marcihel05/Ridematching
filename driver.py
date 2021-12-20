@@ -75,8 +75,8 @@ class Driver:
         route.insert(indOut, [rider, rider.end, 1, time2, "w"] )
         route = self.adjustTimesCopy(route)
         if route[len(route) -1][3] + self.T[route[len(route) -1][1]][self.end] - self.depTime[0] > self.maxTime:
-            print(route[len(route) -1][3] + self.T[route[len(route) -1][1]][self.end] - self.depTime[0])
-            print(self.maxTime)
+            #print(route[len(route) -1][3] + self.T[route[len(route) -1][1]][self.end] - self.depTime[0])
+            #print(self.maxTime)
             return False
         for i in range(len(route)-1):
             if route[i][2] == 0: #tu kupimo putnik

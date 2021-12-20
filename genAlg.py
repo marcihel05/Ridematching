@@ -5,10 +5,12 @@ from settings import *
 
 def genAlg(riderData, driverData, distMatrix, timeMatrix):
     population = Population(riderData, driverData, distMatrix, timeMatrix)
+    #print("imamo populaciju")
     numOfIt = 1
     valueOfFunc = [] #lista vrijednosti funkcije po iteracijama
     bestSolutions = []
     while numOfIt < NUM_OF_ITERATIONS: # or while |oldFunc-newFunc| > EPSILON
+        print(numOfIt)
         newRoutes = []
         population.evaluate()
         best1, best2 = population.findBestSolutions()
