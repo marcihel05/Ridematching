@@ -2,7 +2,7 @@
 import matplotlib.pyplot as plt     #potrebno instalirati
 import pylab
 
-#x - lista listi x koord., y - lista listi y koord., z - lista listi labela
+#x - lista listi x koord., y - lista listi y koord., z - lista koord. i labela
 #i - broj generacije
 def main(x,y,z,i):
     
@@ -17,8 +17,9 @@ def main(x,y,z,i):
     for i in range(len(x)):
         plt.scatter(x[i],y[i])
         plt.plot(x[i],y[i])
-        for j in range(len(x[i])):
-            plt.annotate(z[i][j], (x[i][j], y[i][j]))
+    
+    for t in z:
+        plt.annotate(t[1], t[0])
 
     plt.show()
     return
