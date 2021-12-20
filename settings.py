@@ -12,7 +12,7 @@ BD = 1.3
 V = 60 #km/h
 
 NUM_OF_SOLUTIONS = 10
-NUM_OF_ITERATIONS = 0 #ako radimo na broj iteracija
+NUM_OF_ITERATIONS = 15 #ako radimo na broj iteracija
 EPSILON = 0 #ako radimo dok se funkcija ne ustabili
 
 MUTATION_RATE = 0.4

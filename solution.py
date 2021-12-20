@@ -17,6 +17,7 @@ class Solution:
        random.shuffle(self.routes)
        #print("Next solution")
        for driver in self.routes:
+           print("ja sam novi vozac")
         #   print("Start")
           # driver.printDriver()
            for l in range(len(ridersCopy)):
@@ -137,9 +138,14 @@ class Solution:
         servedReq = delta*len(self.unmatched)
         for driver in self.routes:
             dist += driver.calcDistance()
-            time += abs(self.T[driver.id][driver.end] - self.T[driver.id][driver.start]) #T - matrica taka da T[i][j] = vrijeme u koje je vozač s id-em i došao na destinaciju j
+            if len(driver.stops) == 0: continue
+            time += abs(driver.stops[len(driver.stops)-1][3] + self.T[driver.stops[len(driver.stops)-1][1]][driver.end])
             for stop in driver.stops:
-                if stop[2] == 0: riderTime += abs(self.T[driver.id][stop[0].end] - self.T[driver.id][stop[1]])
+                if stop[2] == 0:
+                    for i in range(driver.stops.index(stop) + 1, len(driver.stops)):
+                        if driver.stops[i][0].id == stop[0].id:
+                            riderTime += driver.stops[i][3] - stop[3]
+                            break #prekida for i
         dist*=alpha
         time*=beta
         riderTime*=delta

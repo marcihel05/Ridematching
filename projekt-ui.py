@@ -98,3 +98,4 @@ class Prozor(Frame):
     
 #poziva sucelje
 p = Prozor(Tk())
+p.mainloop()
