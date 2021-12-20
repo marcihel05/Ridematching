@@ -135,7 +135,7 @@ class Solution:
         dist = 0
         time = 0
         riderTime = 0
-        servedReq = delta*(len(self.riders) - len(self.unmatched))
+        servedReq = delta*len(self.unmatched)
         for driver in self.routes:
             dist += driver.calcDistance()
             time += abs(self.T[driver.id][driver.end] - self.T[driver.id][driver.start]) #T - matrica taka da T[i][j] = vrijeme u koje je vozač s id-em i došao na destinaciju j
@@ -149,6 +149,7 @@ class Solution:
         val += riderTime
         val+=servedReq
         self.fitness = val
+        print(val)
 
     def checkIfFeasibleAfterCrossAndFix(self, routeIndex): #pogledaj dal više vozača ne vozi istog putnika i makni ako ima toga
         for i in range(routeIndex):

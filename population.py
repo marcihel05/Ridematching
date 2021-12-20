@@ -22,7 +22,7 @@ class Population:
             self.drivers.append(Driver(distMatrix, timeMatrix, data))
         while len(self.solutions) < NUM_OF_SOLUTIONS:
             driverCopy = [driver.copy() for driver in self.drivers]
-            riderCopy = [rider.copy() for rider in self.riders]
+            #riderCopy = [rider.copy() for rider in self.riders]
             solution = Solution(distMatrix,timeMatrix, self.riders, driverCopy)
             solution.initialize()
             self.solutions.append(solution)
