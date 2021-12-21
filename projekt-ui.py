@@ -5,6 +5,7 @@ from distAndTime import *
 from genAlg import *
 from solution import *
 import graf
+import graphValues
 import os
 
 class Prozor(Frame):
@@ -58,15 +59,16 @@ class Prozor(Frame):
     def izracunaj(self):
         value, S = genAlg(self.riders, self.drivers, self.distMat, self.timeMat)
         #print(value)
-        for i in value:
-            print(i)
+        #for i in value:
+         #   print(i)
         print('end val')
+        print(value[len(value)-1])
         #for s in S:
             #print([driver.printDriver() for driver in s.routes])
             #print('end sol')
-        
+         
         #PROVJERITI
-        i = 1
+        a = """   i = 1
         for s in S:
             n = len(s.routes)   #broj drivera (routes) u solution (uzeti n-1!)
             X = []
@@ -95,8 +97,38 @@ class Prozor(Frame):
                 Y.append(y)
                 L.append(l)
             graf.main(X,Y,L,i)
-            i += 1
+            graphValues.graphValues(value)
+            i += 1"""
         
+        s = S[len(S) - 1]
+        for route in s.routes:
+            route.printDriver()
+        n = len(s.routes)   #broj drivera (routes) u solution (uzeti n-1!)
+        X = []
+        Y = []
+        L = []
+        for i in range(n-1):
+            x = []
+            y = []
+            l = []
+            x.append(self.koordinate[s.routes[i].start][0])
+            y.append(self.koordinate[s.routes[i].start][1])
+            l.append('d'+ str(s.routes[i].id) + '+')
+            for r in s.routes[i].stops:
+                x.append(self.koordinate[r[1]][0])
+                y.append(self.koordinate[r[1]][1])
+                    #d_id r_id +/- oznaka za svaku točku na putu
+                if r[2]: c = '-'     #arrival     
+                else: c = '+'     #departure    
+            l.append('d'+ str(s.routes[i].id) + "r" + str(r[0].id) + c)
+            x.append(self.koordinate[s.routes[i].end][0])
+            y.append(self.koordinate[s.routes[i].end][1])
+            l.append('d'+ str(s.routes[i].id) + '-')
+            X.append(x)
+            Y.append(y)
+            L.append(l)
+        graf.main(X,Y,L,i)
+        graphValues.graphValues(value)
         print('ok')
         return
 
