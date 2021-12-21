@@ -5,8 +5,8 @@ class Rider:
         self.id = 0
         self.start = () 
         self.end = ()
-        self.depTime = ()
-        self.arrivalTime = ()
+        self.depTime = () #[a,b]
+        self.arrivalTime = () #[a,b]
         self.numOfPassengers = 1
         self.maxTime = 0
         self.T = timeMatrix

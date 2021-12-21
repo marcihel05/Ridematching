@@ -10,10 +10,14 @@ def genAlg(riderData, driverData, distMatrix, timeMatrix):
     valueOfFunc = [] #lista vrijednosti funkcije po iteracijama
     bestSolutions = []
     while numOfIt < NUM_OF_ITERATIONS: # or while |oldFunc-newFunc| > EPSILON
+        #print(numOfIt)
         print(numOfIt)
         newRoutes = []
+        #print("best value prije eval " + str(population.bestValue))
         population.evaluate()
+        #print("best value nakon eval " + str(population.bestValue))
         best1, best2 = population.findBestSolutions()
+        #print("best value nakon findBestSol " + str(population.bestValue))
         valueOfFunc.append(population.bestValue)
         bestSolutions.append(population.bestSolution)
         newRoutes.append(best1)

@@ -14,6 +14,8 @@ class Driver:
         self.T = timeMatrix
         self.maxDist = 0
         self.maxTime = 0
+        self.endTime = 0 #ukomponiraj
+        self.startTime = 0 #ukomponiraj
         if len(data):self.initialize(data)
     
     def initialize(self, data):
@@ -41,6 +43,8 @@ class Driver:
         new.T = self.T
         new.maxDist = self.maxDist
         new.maxTime = self.maxTime
+        new.startTime = self.startTime
+        new.endTime = self.endTime
         return new
         
     
@@ -85,6 +89,7 @@ class Driver:
                     if rider.id == route[j][0].id: #tu ga ostavljamo
                        if route[j][3] - route[i][3] > rider.maxTime:
                            return False
+            
         return True
 
 
@@ -112,10 +117,21 @@ class Driver:
         time2 = stop2[3] #vrijeme kad smo došli na stop2
         return time1 + self.T[stop1[1]][loc] + self.T[loc][stop2[1]] <= time2
     
-    def adjustTimes(self):
+    def adjustTimes(self): #adjust waiting time
         self.stops[0][3] = self.depTime[0] + self.T[self.start][self.stops[0][1]]
         for i in range(len(self.stops)-1):
             self.stops[i+1][3] = self.stops[i][3] + self.T[self.stops[i+1][1]][self.stops[i][1]]
+    
+    def pushForwardAll(self, indOfStop, pf): #dodaj posebni slučaj ako se pomiče sve nakon driver.start
+        for i in range(indOfStop, len(self.stops)):
+            if not pf: return
+            stop = self.stops[i]
+            pf = max(0, pf - stop[4])
+            stop[3] = pf + stop[3]
+            if indOfStop == 0 and i == 0: stop[4] = stop[4] - max(0, stop[0].depTime[0] - stop[3] - self.T[stop[1]][self.start])
+            else: stop[4] = stop[4] - max(0, stop[0].depTime[0] - stop[3] - self.T[stop[1]][self.stops[i-1][1]])
+        pf = max(0, pf)
+        self.endTime = pf + self.endTime
     
     def adjustTimesCopy(self, route):
         copy = route.copy()

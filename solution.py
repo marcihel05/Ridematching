@@ -5,7 +5,7 @@ from settings import *
 class Solution:
     def __init__(self, distMatrix = [],timeMatrix = [], riders = [], drivers = []):
         self.routes = drivers.copy() #lista Drivera
-        self.riders = riders.copy() #lista svih Ridera
+        self.riders = riders #lista svih Ridera
         self.fitness = 0
         self.unmatched = [] #lista Ridera koji se ne voze
         self.numOfRoutes = 0 #len(self.routes)
@@ -28,9 +28,10 @@ class Solution:
                    if len(driver.stops) == 0:
                        if rider.numOfPassengers <= driver.capacity and driver.checkDistance(rider, 0, 1) and driver.checkTime(rider, 0, 1):
                            time1 = driver.depTime[0] + self.T[driver.start][rider.start]
+                           w1 = max(0, rider.depTime[0] - driver.depTime[0] - self.T[driver.start][rider.start])
                            time2 = time1 + self.T[rider.start][rider.end]
-                           driver.stops.insert(0, [rider, rider.start, 0, time1, "w"])
-                           driver.stops.insert(1, [rider, rider.end, 1, time2, "w"])
+                           driver.stops.insert(0, [rider, rider.start, 0, time1, w1])
+                           driver.stops.insert(1, [rider, rider.end, 1, time2, 0])
                            ridersCopy.pop(r)
                            driver.adjustTimes()
                            inserted = True
@@ -41,10 +42,11 @@ class Solution:
                             for j in range(k, len(driver.stops)): #di buš ga ostavil
                                 if driver.compareTime(rider, j, 1):
                                     if driver.checkCapacity(rider.numOfPassengers, i) and driver.checkDistance(rider, k, j+1) and driver.checkTime(rider, k, j+1):
-                                        time1 = driver.stops[k-1][3] + self.T[driver.stops[k-1][1]][rider.start]
+                                        time1 = max(rider.depTime[0], driver.stops[k-1][3] + self.T[driver.stops[k-1][1]][rider.start])
+                                        w1 = max(0, rider.depTime[0] - driver.stops[k-1][3] - self.T[driver.stops[k-1][1]][rider.start])
                                         time2 = driver.stops[j][3] + self.T[driver.stops[j][1]][rider.end]
-                                        driver.stops.insert(k, [rider, rider.start, 0, time1, "w"])
-                                        driver.stops.insert(j+1, [rider, rider.end, 1, time2, "w"])
+                                        driver.stops.insert(k, [rider, rider.start, 0, time1, w1])
+                                        driver.stops.insert(j+1, [rider, rider.end, 1, time2, 0])
                                         inserted = True
                                         ridersCopy.pop(r)
                                         driver.adjustTimes()
@@ -59,7 +61,7 @@ class Solution:
         
     def mutate(self):
         #self.pushBackward()
-        #self.pushForward()
+        self.pushForward()
         self.removeInsert()
         self.transfer()
         self.swap()
@@ -69,16 +71,30 @@ class Solution:
             r = random.random()
             if r < MUTATION_RATE and len(route.stops) > 0: #mutiraj
                 i = random.randrange(len(route.stops))
-
-                route.calculateTakenSeats()
+                stop = route.stops[i]
+                pb = random.randrange(stop[3] - stop[0].depTime[0])
+                stop[3] = stop[3] - pb
+                #pushBackward ostale
+                #route.calculateTakenSeats()
     
-    def pushForward(self): #seconds mutation operator
+    def pushForward(self): #second mutation operator 
         for route in self.routes:
             r = random.random()
             if r < MUTATION_RATE and len(route.stops) > 0: #mutiraj
-                i = random.randrange(len(route.stops))
-                
-                route.calculateTakenSeats()
+                i = random.randrange(-1, len(route.stops))
+                if( i == -1):
+                    pf = random.randrange(route.depTime[1])
+                    route.startTime = route.startTime + pf
+                else:
+                    stop = route.stops[i]
+                    if stop[2] == 1: return
+                    if stop[0].depTime[1] - stop[3] > 0: pf = random.randrange(stop[0].depTime[1] - stop[3])
+                    else: pf = 0
+                    stop[3] = stop[3] + pf
+                route.pushForwardAll(i+1, pf)
+                #route.calculateTakenSeats()
+
+            
     
     def removeInsert(self): #third mutation operator
         for route in self.routes:
@@ -135,7 +151,7 @@ class Solution:
         dist = 0
         time = 0
         riderTime = 0
-        servedReq = delta*len(self.unmatched)
+        unservedReq = delta*len(self.unmatched)
         for driver in self.routes:
             dist += driver.calcDistance()
             if len(driver.stops) == 0: continue
@@ -148,13 +164,13 @@ class Solution:
                             break #prekida for i
         dist*=alpha
         time*=beta
-        riderTime*=delta
+        riderTime*=gamma
         val+=dist
         val+=time
         val += riderTime
-        val+=servedReq
+        val+=unservedReq
         self.fitness = val
-        print(val)
+        #print(val)
 
     def checkIfFeasibleAfterCrossAndFix(self, routeIndex): #pogledaj dal više vozača ne vozi istog putnika i makni ako ima toga
         for i in range(routeIndex):
@@ -193,9 +209,10 @@ class Solution:
                    if len(driver.stops) == 0:
                        if rider.numOfPassengers <= driver.capacity and driver.checkDistance(rider, 0, 1) and driver.checkTime(rider, 0, 1):
                            time1 = driver.depTime[0] + self.T[driver.start][rider.start]
+                           w1 = max(0, rider.depTime[0] - driver.depTime[0] - self.T[driver.start][rider.start])
                            time2 = time1 + self.T[rider.start][rider.end]
-                           driver.stops.insert(0, [rider, rider.start, 0, time1, "w"])
-                           driver.stops.insert(1, [rider, rider.end, 1, time2, "w"])
+                           driver.stops.insert(0, [rider, rider.start, 0, time1, w1])
+                           driver.stops.insert(1, [rider, rider.end, 1, time2, 0])
                            driver.adjustTimes()
                            return True
                        continue
@@ -206,9 +223,10 @@ class Solution:
                                 if driver.compareTime(rider, j, 1):
                                     if driver.checkCapacity(rider.numOfPassengers, i) and driver.checkDistance(rider, k, j+1) and driver.checkTime(rider, k, j+1):
                                         time1 = driver.stops[k-1][3] + self.T[driver.stops[k-1][1]][rider.start]
+                                        w1 = max(0, rider.depTime[0] - driver.stops[k-1][3] - self.T[driver.stops[k-1][1]][rider.start])
                                         time2 = driver.stops[j][3] + self.T[driver.stops[j][1]][rider.end]
-                                        driver.stops.insert(k, [rider, rider.start, 0, time1, "w"])
-                                        driver.stops.insert(j+1, [rider, rider.end, 1, time2, "w"])
+                                        driver.stops.insert(k, [rider, rider.start, 0, time1, w1])
+                                        driver.stops.insert(j+1, [rider, rider.end, 1, time2, 0])
                                         driver.adjustTimes()
                                         return True
         return False
@@ -219,9 +237,10 @@ class Solution:
                 if len(driver.stops) == 0:
                     if rider.numOfPassengers <= driver.capacity and driver.checkDistance(rider, 0, 1) and driver.checkTime(rider, 0, 1):
                         time1 = driver.depTime[0] + self.T[driver.start][rider.start]
+                        w1 = max(0, rider.depTime[0] - driver.depTime[0] - self.T[driver.start][rider.start])
                         time2 = time1 + self.T[rider.start][rider.end]
-                        driver.stops.insert(0, [rider, rider.start, 0, time1, "w"])
-                        driver.stops.insert(1, [rider, rider.end, 1, time2, "w"])
+                        driver.stops.insert(0, [rider, rider.start, 0, time1, w1])
+                        driver.stops.insert(1, [rider, rider.end, 1, time2, 0])
                         driver.adjustTimes()
                         return True
                     return False
@@ -232,9 +251,10 @@ class Solution:
                             if driver.compareTime(rider, j, 1):
                                 if driver.checkCapacity(rider.numOfPassengers, i) and driver.checkDistance(rider, k, j+1) and driver.checkTime(rider, k, j+1):
                                     time1 = driver.stops[k-1][3] + self.T[driver.stops[k-1][1]][rider.start]
+                                    w1 = max(0, rider.depTime[0] - driver.stops[k-1][3] - self.T[driver.stops[k-1][1]][rider.start])
                                     time2 = driver.stops[j][3] + self.T[driver.stops[j][1]][rider.end]
-                                    driver.stops.insert(k, [rider, rider.start, 0, time1, "w"])
-                                    driver.stops.insert(j+1, [rider, rider.end, 1, time2, "w"])
+                                    driver.stops.insert(k, [rider, rider.start, 0, time1, w1])
+                                    driver.stops.insert(j+1, [rider, rider.end, 1, time2, 0])
                                     driver.adjustTimes()
                                     return True
         return False    
@@ -245,9 +265,11 @@ class Solution:
     
     def findIndex(self, stops, id):
         for stop in stops:
-            if stop[0].id == id:
+            if stop[0].id == id and stop[2] == 1:
                 return stops.index(stop)
         return -1
+    
+
     
 
     def copy(self):
