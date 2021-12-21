@@ -2,7 +2,7 @@ from settings import *
 
 def calcDistance(a, b):
     from math import sin, cos, sqrt, atan2, radians
-    R = 6.373 # approx radius of Earth
+    R = 6371 # approx radius of Earth in km
     lon1 = radians(a[0])
     lat1 = radians(a[1])
     lon2 = radians(b[0])
