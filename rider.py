@@ -12,6 +12,8 @@ class Rider:
         self.T = timeMatrix
         if len(data):
             self.initialize(data)
+
+            
     def initialize(self, data):
         self.id = data[0]
         self.start = data[1]

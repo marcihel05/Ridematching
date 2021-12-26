@@ -16,6 +16,7 @@ class Driver:
         self.maxTime = 0
         self.endTime = 0 #ukomponiraj
         self.startTime = 0 #ukomponiraj
+        self.distance = 0
         if len(data):self.initialize(data)
     
     def initialize(self, data):
@@ -27,6 +28,8 @@ class Driver:
         self.capacity = data[5]
         self.maxDist = self.D[self.start][self.end] * BD + AD
         self.maxTime = AT + BT * self.T[self.start][self.end]
+        self.startTime = self.depTime[0]
+        self.endTime = self.startTime + self.T[self.start][self.end]
 
     
     def copy(self):
@@ -45,6 +48,7 @@ class Driver:
         new.maxTime = self.maxTime
         new.startTime = self.startTime
         new.endTime = self.endTime
+        new.distance = self.distance
         return new
         
     
@@ -54,6 +58,7 @@ class Driver:
         for i in range(len(self.stops)-1):
             dist += self.D[self.stops[i][1]][self.stops[i+1][1]] # D - matrica takva da D[i][j] == udaljenost između stanica i i j
         dist += self.D[self.stops[len(self.stops)-1][1]][self.end]
+        self.distance = dist
         return dist
     
 
@@ -73,10 +78,13 @@ class Driver:
     def checkTime(self, rider, indIn, indOut):
         route = self.stops.copy()
         if indIn == 0: time1 = self.depTime[0] + self.T[self.start][rider.start]
-        else: time1 = route[indIn -1][3] + self.T[route[indIn -1][1]][rider.start]
-        route.insert(indIn, [rider, rider.start, 0, time1, "w"] )
-        time2 = route[indOut-1][3] + self.T[route[indOut-1][1]][rider.end]
-        route.insert(indOut, [rider, rider.end, 1, time2, "w"] )
+        else: time1 = route[indIn -1][3] + self.T[route[indIn -1][1]][rider.start] + route[indIn -1][4]
+        if time1 > rider.depTime[1]: return False
+        w1 = max(0, rider.depTime[0] - time1)
+        route.insert(indIn, [rider, rider.start, 0, time1, w1] )
+        time2 = route[indOut-1][3] + self.T[route[indOut-1][1]][rider.end] + route[indOut-1][4]
+        if time2 > rider.arrivalTime[1]: return False
+        route.insert(indOut, [rider, rider.end, 1, time2, 0] )
         route = self.adjustTimesCopy(route)
         if route[len(route) -1][3] + self.T[route[len(route) -1][1]][self.end] - self.depTime[0] > self.maxTime:
             #print(route[len(route) -1][3] + self.T[route[len(route) -1][1]][self.end] - self.depTime[0])
@@ -117,10 +125,11 @@ class Driver:
         time2 = stop2[3] #vrijeme kad smo došli na stop2
         return time1 + self.T[stop1[1]][loc] + self.T[loc][stop2[1]] <= time2
     
-    def adjustTimes(self): #adjust waiting time
+    def adjustTimes(self): #adjust waiting time - dodaj za auto
         self.stops[0][3] = self.depTime[0] + self.T[self.start][self.stops[0][1]]
         for i in range(len(self.stops)-1):
-            self.stops[i+1][3] = self.stops[i][3] + self.T[self.stops[i+1][1]][self.stops[i][1]]
+            self.stops[i+1][3] = self.stops[i][3] + self.T[self.stops[i+1][1]][self.stops[i][1]] + self.stops[i][4]
+            self.stops[i+1][4] = max(0, self.stops[i+1][0].depTime[0] - self.stops[i+1][3])
     
     def pushForwardAll(self, indOfStop, pf): #dodaj posebni slučaj ako se pomiče sve nakon driver.start
         for i in range(indOfStop, len(self.stops)):
@@ -132,12 +141,25 @@ class Driver:
             else: stop[4] = stop[4] - max(0, stop[0].depTime[0] - stop[3] - self.T[stop[1]][self.stops[i-1][1]])
         pf = max(0, pf)
         self.endTime = pf + self.endTime
+
+    def pushBackwardAll(self, indOfStop, pb):
+        for i in range(indOfStop, len(self.stops)):
+            if not pb: return
+            stop = self.stops[i]
+            pb = min(pb, stop[3] - stop[0].depTime[0])
+            stop[3] = stop[3] - pb
+            if indOfStop == 0 and i == 0 and stop[2] == 0: stop[4] = stop[4] - max(0, stop[0].depTime[0] - stop[3] - self.T[stop[1]][self.start])
+            elif i > 0 and stop[2] == 0: stop[4] = stop[4] - max(0, stop[0].depTime[0] - stop[3] - self.T[stop[1]][self.stops[i-1][1]])
+        pb = min(pb, self.endTime - self.depTime[0])
+        self.endTime = self.endTime - pb
+
     
-    def adjustTimesCopy(self, route):
+    def adjustTimesCopy(self, route): #dodaj za auto
         copy = route.copy()
         copy[0][3] = self.depTime[0] + self.T[self.start][copy[0][1]]
         for i in range(len(copy)-1):
-            copy[i+1][3] = copy[i][3] + self.T[copy[i+1][1]][copy[i][1]]
+            copy[i+1][3] = copy[i][3] + self.T[copy[i+1][1]][copy[i][1]] + copy[i][4]
+            copy[i+1][4] = max(0, copy[i+1][0].depTime[0] - copy[i+1][3])
         return copy
 
     def checkCapacity(self, numOfPass, index):
@@ -167,7 +189,7 @@ class Driver:
         listDriver = [self.id, self.start, self.end, self.depTime, self.arrivalTime, self.capacity, self.taken]
         print(listDriver)
         for stop in self.stops:
-            strr = stop[0].toString() + ", " + str(stop[1]) + ", " + str(stop[2])
+            strr = stop[0].toString() + ", " + str(stop[1]) + ", " + str(stop[2]) + ", " + str(stop[3]) + ", " + str(stop[4])
             print(strr)
 
 

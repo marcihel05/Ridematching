@@ -9,12 +9,12 @@ class Solution:
         self.fitness = 0
         self.unmatched = [] #lista Ridera koji se ne voze
         self.numOfRoutes = 0 #len(self.routes)
+        self.distance = 0
         self.D = distMatrix
         self.T = timeMatrix
     
     def initialize(self): #inicijaliziraj početno rješenje - posloži driver.stops i unmatched stops
        ridersCopy = self.riders.copy()
-       random.shuffle(self.routes)
        #print("Next solution")
        for driver in self.routes:
            #print("ja sam novi vozac")
@@ -41,7 +41,14 @@ class Solution:
                             k = i+1 #ubaci na k
                             for j in range(k, len(driver.stops)): #di buš ga ostavil
                                 if driver.compareTime(rider, j, 1):
-                                    if driver.checkCapacity(rider.numOfPassengers, i) and driver.checkDistance(rider, k, j+1) and driver.checkTime(rider, k, j+1):
+                                    cap = driver.checkCapacity(rider.numOfPassengers, i)
+                                    dist = driver.checkDistance(rider, k, j+1)
+                                    time = driver.checkTime(rider, k, j+1)
+                                    print("cap " + str(cap))
+                                    print("dist " + str(dist))
+                                    print("time " + str(time))
+                                    #if driver.checkCapacity(rider.numOfPassengers, i) and driver.checkDistance(rider, k, j+1) and driver.checkTime(rider, k, j+1):
+                                    if cap and dist and time:
                                         time1 = max(rider.depTime[0], driver.stops[k-1][3] + self.T[driver.stops[k-1][1]][rider.start])
                                         w1 = max(0, rider.depTime[0] - driver.stops[k-1][3] - self.T[driver.stops[k-1][1]][rider.start])
                                         time2 = driver.stops[j][3] + self.T[driver.stops[j][1]][rider.end]
@@ -60,22 +67,23 @@ class Solution:
             
         
     def mutate(self):
-        #self.pushBackward()
+        self.pushBackward()
         self.pushForward()
         self.removeInsert()
         self.transfer()
         self.swap()
     
-    def pushBackward(self): #first mutation operator
+    def pushBackward(self): #first mutation operator #dodaj vozača
         for route in self.routes:
             r = random.random()
             if r < MUTATION_RATE and len(route.stops) > 0: #mutiraj
                 i = random.randrange(len(route.stops))
                 stop = route.stops[i]
-                pb = random.randrange(stop[3] - stop[0].depTime[0])
-                stop[3] = stop[3] - pb
-                #pushBackward ostale
-                #route.calculateTakenSeats()
+                if stop[3] - stop[0].depTime[0] >= 1:
+                    pb = random.randrange(stop[3] - stop[0].depTime[0])
+                    stop[3] = stop[3] - pb 
+                    route.pushBackwardAll(i+1, pb)
+                    route.calculateTakenSeats()
     
     def pushForward(self): #second mutation operator 
         for route in self.routes:
@@ -92,7 +100,7 @@ class Solution:
                     else: pf = 0
                     stop[3] = stop[3] + pf
                 route.pushForwardAll(i+1, pf)
-                #route.calculateTakenSeats()
+                route.calculateTakenSeats()
 
             
     
@@ -155,13 +163,14 @@ class Solution:
         for driver in self.routes:
             dist += driver.calcDistance()
             if len(driver.stops) == 0: continue
-            time += abs(driver.stops[len(driver.stops)-1][3] + self.T[driver.stops[len(driver.stops)-1][1]][driver.end])
+            time += driver.stops[len(driver.stops)-1][3] + self.T[driver.stops[len(driver.stops)-1][1]][driver.end] - driver.startTime
             for stop in driver.stops:
                 if stop[2] == 0:
                     for i in range(driver.stops.index(stop) + 1, len(driver.stops)):
                         if driver.stops[i][0].id == stop[0].id:
-                            riderTime += driver.stops[i][3] - stop[3]
+                            riderTime += (driver.stops[i][3] - stop[3])
                             break #prekida for i
+        self.distance = dist
         dist*=alpha
         time*=beta
         riderTime*=gamma
@@ -279,6 +288,7 @@ class Solution:
         new.routes = [driver.copy() for driver in self.routes]
         new.fitness = self.fitness
         new.numOfRoutes = self.numOfRoutes
+        new.distance = self.distance
         new.D = self.D
         new.T = self.T
         return new
