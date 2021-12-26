@@ -64,7 +64,7 @@ class Prozor(Frame):
         return
 
     def izracunaj(self):
-        value, S = genAlg(self.riders, self.drivers, self.distMat, self.timeMat)
+        value, S, matched, distance = genAlg(self.riders, self.drivers, self.distMat, self.timeMat)
         self.vlabel.set('Izracun uspjesan')
         #for i in value:
             #print(i)
@@ -76,7 +76,8 @@ class Prozor(Frame):
         G = []
         br = 1
         poruka = ''
-        for s in S:
+        s = S[len(S) - 1]
+        a = """  for s in S:
             if poruka != '':
                 poruka += '\n'
             poruka += 'Broj nesparenih putnika u gen ' + str(br) + ': ' + str(len(s.unmatched))
@@ -124,9 +125,63 @@ class Prozor(Frame):
                 L.append((self.koordinate[i], self.k_label[i]))
             G.append((X,Y,L,br))
             br += 1
-            self.k_label = ['' for i in range(len(self.koordinate))]
+            self.k_label = ['' for i in range(len(self.koordinate))]"""
+
+        poruka += 'Broj nesparenih putnika u gen ' + str(br) + ': ' + str(len(s.unmatched))
+        self.vlabel1.set(poruka)
+        n = len(s.routes)   #broj drivera (routes) u solution (uzeti n-1!)
+        X = []
+        Y = []
+        I = set()
+        L = []
+        for i in range(n-1):
+            if len(s.routes[i].stops):
+                x = []
+                y = []
+                x.append(self.koordinate[s.routes[i].start][0])
+                y.append(self.koordinate[s.routes[i].start][1])
+                if self.k_label[s.routes[i].start] == '':
+                    self.k_label[s.routes[i].start] = 'd'+ str(s.routes[i].id) + '+'
+                else:
+                    self.k_label[s.routes[i].start] += '\nd'+ str(s.routes[i].id) + '+'
+                I.add(s.routes[i].start)
+                for r in s.routes[i].stops:
+                    x.append(self.koordinate[r[1]][0])
+                    y.append(self.koordinate[r[1]][1])
+                    #d_id r_id +/- oznaka za svaku točku na putu
+                    if r[2]:
+                        c = '-'     #arrival
+                    else:
+                        c = '+'     #departure
+                    if self.k_label[r[1]] == '':
+                        self.k_label[r[1]] = 'd'+ str(s.routes[i].id) + ' r' + str(r[0].id) + c
+                    else:
+                        self.k_label[r[1]] += '\nd'+ str(s.routes[i].id) + ' r' + str(r[0].id) + c
+                    I.add(r[1])
+                x.append(self.koordinate[s.routes[i].end][0])
+                y.append(self.koordinate[s.routes[i].end][1])
+                if self.k_label[s.routes[i].start] == '':
+                    self.k_label[s.routes[i].end] = 'd'+ str(s.routes[i].id) + '-'
+                else:
+                    self.k_label[s.routes[i].end] += '\nd'+ str(s.routes[i].id) + '-'
+                I.add(s.routes[i].end)
+                X.append(x)
+                Y.append(y)
+            
+        for i in I:
+            L.append((self.koordinate[i], self.k_label[i]))
+        G.append((X,Y,L,br))
+        #br += 1
+        self.k_label = ['' for i in range(len(self.koordinate))]
         
+        for route in s.routes:
+            route.printDriver()
+        print(value[len(value) - 1])
         graf.main(G)
+        graphValues.graphValues(value)
+        graphValues.graphUnmatched(matched)
+        graphValues.graphDistance(distance)
+        
         return
 
     
