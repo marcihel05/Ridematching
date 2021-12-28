@@ -1,6 +1,7 @@
 import random
 from driver import *
 from settings import *
+from math import ceil
 
 class Solution:
     def __init__(self, distMatrix = [],timeMatrix = [], riders = [], drivers = []):
@@ -14,7 +15,7 @@ class Solution:
         self.T = timeMatrix
     
     def initialize(self): #inicijaliziraj početno rješenje - posloži driver.stops i unmatched stops
-       ridersCopy = self.riders.copy()
+       ridersCopy = [rider.copy() for rider in self.riders]
        #print("Next solution")
        for driver in self.routes:
            #print("ja sam novi vozac")
@@ -27,7 +28,10 @@ class Solution:
                if driver.depTime[0] < rider.depTime[1] and driver.arrivalTime[1] > rider.arrivalTime[0]: #vremenski okvir je okej
                    if len(driver.stops) == 0:
                        if rider.numOfPassengers <= driver.capacity and driver.checkDistance(rider, 0, 1) and driver.checkTime(rider, 0, 1):
-                           time1 = driver.depTime[0] + self.T[driver.start][rider.start]
+                           time1 = driver.startTime + self.T[driver.start][rider.start]
+                           if time1 > rider.depTime[1]: 
+                               print("krivo radi")
+                               continue
                            w1 = max(0, rider.depTime[0] - driver.depTime[0] - self.T[driver.start][rider.start])
                            time2 = time1 + self.T[rider.start][rider.end]
                            driver.stops.insert(0, [rider, rider.start, 0, time1, w1])
@@ -35,30 +39,32 @@ class Solution:
                            ridersCopy.pop(r)
                            driver.adjustTimes()
                            inserted = True
-                       continue
-                   for i in range(-1, len(driver.stops)): #di buš ga pokupil
-                        if driver.compareTime(rider, i, 0): #može vremenski na index i
-                            k = i+1 #ubaci na k
-                            for j in range(k, len(driver.stops)): #di buš ga ostavil
-                                if driver.compareTime(rider, j, 1):
-                                    cap = driver.checkCapacity(rider.numOfPassengers, i)
-                                    dist = driver.checkDistance(rider, k, j+1)
-                                    time = driver.checkTime(rider, k, j+1)
-                                    print("cap " + str(cap))
-                                    print("dist " + str(dist))
-                                    print("time " + str(time))
+                   else:
+                        for i in range(-1, len(driver.stops)): #di buš ga pokupil
+                            if driver.compareTime(rider, i, 0): #može vremenski na index i
+                                k = i+1 #ubaci na k
+                                for j in range(k, len(driver.stops)): #di buš ga ostavil
+                                    if driver.compareTime(rider, j, 1):
+                                        cap = driver.checkCapacity(rider.numOfPassengers, i)
+                                        dist = driver.checkDistance(rider, k, j+1)
+                                        time = driver.checkTime(rider, k, j+1)
+                                    #print("cap " + str(cap))
+                                    #print("dist " + str(dist))
+                                    #print("time " + str(time))
                                     #if driver.checkCapacity(rider.numOfPassengers, i) and driver.checkDistance(rider, k, j+1) and driver.checkTime(rider, k, j+1):
-                                    if cap and dist and time:
-                                        time1 = max(rider.depTime[0], driver.stops[k-1][3] + self.T[driver.stops[k-1][1]][rider.start])
-                                        w1 = max(0, rider.depTime[0] - driver.stops[k-1][3] - self.T[driver.stops[k-1][1]][rider.start])
-                                        time2 = driver.stops[j][3] + self.T[driver.stops[j][1]][rider.end]
-                                        driver.stops.insert(k, [rider, rider.start, 0, time1, w1])
-                                        driver.stops.insert(j+1, [rider, rider.end, 1, time2, 0])
-                                        inserted = True
-                                        ridersCopy.pop(r)
-                                        driver.adjustTimes()
-                                        break # prekida for j
-                            if inserted: break #prekida for i
+                                        if cap and dist and time:
+                                            time1 = max(rider.depTime[0], driver.stops[k-1][3] + driver.stops[k-1][4] + self.T[driver.stops[k-1][1]][rider.start])
+                                            if time1 > rider.depTime[1]: continue
+                                            w1 = max(0, rider.depTime[0] - time1)
+                                            time2 = driver.stops[j][3] + driver.stops[j][4] + self.T[driver.stops[j][1]][rider.end]
+                                            if time2 > rider.arrivalTime[1]: continue
+                                            driver.stops.insert(k, [rider, rider.start, 0, time1, w1])
+                                            driver.stops.insert(j+1, [rider, rider.end, 1, time2, 0])
+                                            inserted = True
+                                            ridersCopy.pop(r)
+                                            driver.adjustTimes()
+                                            break # prekida for j
+                                if inserted: break #prekida for i
           # print("End")
            #driver.printDriver()
        self.unmatched = ridersCopy.copy()
@@ -67,11 +73,11 @@ class Solution:
             
         
     def mutate(self):
-        self.pushBackward()
-        self.pushForward()
+        #self.pushBackward() #popraviti 
+        #self.pushForward() #popraviti
         self.removeInsert()
         self.transfer()
-        self.swap()
+        self.swap() #postaviti provjere
     
     def pushBackward(self): #first mutation operator #dodaj vozača
         for route in self.routes:
@@ -79,11 +85,13 @@ class Solution:
             if r < MUTATION_RATE and len(route.stops) > 0: #mutiraj
                 i = random.randrange(len(route.stops))
                 stop = route.stops[i]
-                if stop[3] - stop[0].depTime[0] >= 1:
-                    pb = random.randrange(stop[3] - stop[0].depTime[0])
-                    stop[3] = stop[3] - pb 
-                    route.pushBackwardAll(i+1, pb)
-                    route.calculateTakenSeats()
+                if stop[2] == 1: continue
+                if stop[3] - stop[0].depTime[0] > 0: pb = random.uniform(0, ceil(stop[3] - stop[0].depTime[0]))
+                else: pb = 0
+                stop[3] = stop[3] - pb 
+                stop[4] = stop[4] - max(0, stop[0].depTime[0] - stop[3] - self.T[stop[1]][route.stops[i-1][1]])
+                route.pushBackwardAll(i+1, pb)
+                route.calculateTakenSeats()
     
     def pushForward(self): #second mutation operator 
         for route in self.routes:
@@ -91,14 +99,19 @@ class Solution:
             if r < MUTATION_RATE and len(route.stops) > 0: #mutiraj
                 i = random.randrange(-1, len(route.stops))
                 if( i == -1):
-                    pf = random.randrange(route.depTime[1])
+                    pf = random.uniform(0, route.depTime[1])
                     route.startTime = route.startTime + pf
                 else:
                     stop = route.stops[i]
-                    if stop[2] == 1: return
-                    if stop[0].depTime[1] - stop[3] > 0: pf = random.randrange(stop[0].depTime[1] - stop[3])
+                    if stop[2] == 1: continue
+                    #if stop[2] == 1: return
+                    if stop[0].depTime[1] - stop[3] > 0: pf = random.uniform(0, stop[0].depTime[1] - stop[3])
                     else: pf = 0
+                    if stop[3] < stop[0].depTime[1]: print("prekasno prije pb")
                     stop[3] = stop[3] + pf
+                    if stop[3] < stop[0].depTime[0]: print("prerano")
+                    if stop[3] > stop[0].depTime[1]: print("prekasno")
+                    stop[4] = stop[4] - max(0, stop[0].depTime[0] - stop[3] - self.T[stop[1]][route.stops[i-1][1]])
                 route.pushForwardAll(i+1, pf)
                 route.calculateTakenSeats()
 
@@ -139,7 +152,13 @@ class Solution:
                 i = random.randrange(len(route.stops))
                 if i == len(route.stops) -1 : continue
                 if route.stops[i][0] != route.stops[i+1][0]:
-                    route.stops[i], route.stops[i+1] = route.stops[i+1], route.stops[i]
+                    #print("swap: " + str(route.id))
+                    #route.stops[i], route.stops[i+1] = route.stops[i+1].copy(), route.stops[i].copy()
+                    s1 = route.stops[i].copy()
+                    s2 = route.stops[i+1].copy()
+                    route.stops[i] = s2
+                    route.stops[i+1] = s1
+                    route.adjustTimes()
 
     def crossover(self, otherSolution):
         newSolution1, newSolution2 = self.copy(), otherSolution.copy()
@@ -167,10 +186,13 @@ class Solution:
             for stop in driver.stops:
                 if stop[2] == 0:
                     for i in range(driver.stops.index(stop) + 1, len(driver.stops)):
-                        if driver.stops[i][0].id == stop[0].id:
+                        if driver.stops[i][0].id == stop[0].id and driver.stops[i][2] == 1:
                             riderTime += (driver.stops[i][3] - stop[3])
                             break #prekida for i
         self.distance = dist
+        if(dist < 0): print("dist: " + str(dist))
+        if(time < 0): print("time: " + str(time))
+        if(riderTime < 0): print("riderTime: " + str(riderTime))
         dist*=alpha
         time*=beta
         riderTime*=gamma
@@ -204,8 +226,8 @@ class Solution:
                         break #prekini for stop
                 if exists: break #prekini for route
             if not exists:
-                unmatchedNew.append(rider)
-        self.unmatched = unmatchedNew
+                unmatchedNew.append(rider.copy())
+        self.unmatched = [rider.copy() for rider in unmatchedNew]
     
     def insertUnmatched(self):
         for rider in self.unmatched:
@@ -217,8 +239,8 @@ class Solution:
                 if driver.depTime[0] < rider.depTime[1] and driver.arrivalTime[1] > rider.arrivalTime[0]: #vremenski okvir je okej
                    if len(driver.stops) == 0:
                        if rider.numOfPassengers <= driver.capacity and driver.checkDistance(rider, 0, 1) and driver.checkTime(rider, 0, 1):
-                           time1 = driver.depTime[0] + self.T[driver.start][rider.start]
-                           w1 = max(0, rider.depTime[0] - driver.depTime[0] - self.T[driver.start][rider.start])
+                           time1 = driver.startTime + self.T[driver.start][rider.start]
+                           w1 = max(0, rider.depTime[0] - driver.startTime - self.T[driver.start][rider.start])
                            time2 = time1 + self.T[rider.start][rider.end]
                            driver.stops.insert(0, [rider, rider.start, 0, time1, w1])
                            driver.stops.insert(1, [rider, rider.end, 1, time2, 0])
