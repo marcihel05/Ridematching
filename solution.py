@@ -142,16 +142,23 @@ class Solution:
             if r < MUTATION_RATE and len(route.stops) > 0:  #mutiraj
                 i = random.randrange(len(route.stops))
                 stop = route.stops[i]
+                if stop[2] == 1:
+                    ind = self.findIndex2(route.stops, stop[0].id)
+                    stop = route.stops[ind]
                 self.unmatched.append(stop[0])
                 route.stops.remove(stop)
                 ind = self.findIndex(route.stops, stop[0].id)
                 if ind > -1:
+                    print("okej")
                     route.stops.pop(ind)
+                else: print("something's wrong in remove insert " +str(self.routes.index(route)))
                 route.adjustTimes()
                 for rider in self.unmatched:
-                    if self.tryToInsert2(rider, route): self.unmatched.remove(rider)
+                    #if self.tryToInsert2(rider, route): self.unmatched.remove(rider)
+                    self.tryToInsert2(rider, route)
                     route.adjustTimes()
                 route.calculateTakenSeats()
+                self.modifyUnmatched()
 
                 
     
@@ -161,10 +168,14 @@ class Solution:
             if r < MUTATION_RATE and len(route.stops) > 0: #mutiraj
                 i = random.randrange(len(route.stops))
                 stop = route.stops[i]
+                if stop[2] == 1:
+                    ind = self.findIndex2(route.stops, stop[0].id)
+                    stop = route.stops[ind]
                 if self.tryToInsert(route.stops[i][0], self.routes.index(route)):
                     route.stops.remove(stop)
                     ind = self.findIndex(route.stops, stop[0].id)
                     if ind > -1: route.stops.pop(ind)
+                    else: print("something's wrong in transfer " + str(self.routes.index(route)))
                     route.adjustTimes()
                     route.calculateTakenSeats()
     
@@ -247,9 +258,11 @@ class Solution:
                     for j in range(routeIndex,len(self.routes)):
                         for stop2 in self.routes[j].stops:
                             if stop2 == rider:
+                                #print("micemo ga")
                                 self.routes[j].stops.remove(rider)
                                 ind = self.findIndex(self.routes[j].stops, rider[0].id)
                                 if ind > -1: self.routes[j].stops.pop(ind)
+                                else: print("smoething's wrong")
                                 self.routes[j].adjustTimes()
     
     def modifyUnmatched(self):
@@ -268,8 +281,9 @@ class Solution:
     
     def insertUnmatched(self):
         for rider in self.unmatched:
-            if self.tryToInsert(rider): self.unmatched.remove(rider)
-
+            #if self.tryToInsert(rider): self.unmatched.remove(rider)
+            self.tryToInsert(rider)
+        self.modifyUnmatched()
 
     def tryToInsert(self, rider, routeIndex = -1): #probaj ga negde staviti - POPRAVITI
         for driver in self.routes:
