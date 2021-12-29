@@ -56,16 +56,19 @@ class Prozor(Frame):
         #s poddir instances_metadata koji sadrzi datoteke - mijenjati po potrebi
         f = open(os.path.join('./instances/instances_metadata', s), 'r')
         self.riders, self.drivers, self.koordinate = parseData(f)
+        #if s in ['RM698_L15.txt', 'RM698_L60.txt', 'RM744_L15.txt', 'RM744_L60.txt']: self.riders, self.drivers, self.koordinate = parseData2(f, 0) #za vozace biramo one koji imaju najvecu udaljenost
+        #else: self.riders, self.drivers, self.koordinate = parseData2(f, 1) #vozace biramo nasumicno
         f.close()
         self.distMat = distances(self.koordinate)
         self.timeMat = times(self.koordinate, self.distMat)
         self.k_label = ['' for i in range(len(self.koordinate))]
-        self.vlabel.set('Ucitavanje uspjesno')
+        self.vlabel.set('Ucitavanje uspjesno!')
         return
 
     def izracunaj(self):
         value, S, matched, distance = genAlg(self.riders, self.drivers, self.distMat, self.timeMat)
-        self.vlabel.set('Izracun uspjesan')
+        s = S[len(S) - 1]
+        self.vlabel.set('Izracun uspjesan!\n Broj nesparenih putnika u generaciji: ' + str(len(s.unmatched)))
         #for i in value:
             #print(i)
         #print('end val')
@@ -76,7 +79,7 @@ class Prozor(Frame):
         G = []
         br = 1
         poruka = ''
-        s = S[len(S) - 1]
+        #s = S[len(S) - 1]
         a = """  for s in S:
             if poruka != '':
                 poruka += '\n'
