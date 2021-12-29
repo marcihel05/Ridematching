@@ -41,7 +41,7 @@ class Driver:
         new.arrivalTime = self.arrivalTime
         new.capacity = self.capacity
         new.taken = self.taken
-        new.stops = self.stops.copy()
+        new.stops = [stop.copy() for stop in self.stops]
         new.D = self.D
         new.T = self.T
         new.maxDist = self.maxDist
@@ -89,8 +89,8 @@ class Driver:
         if time2 > rider.arrivalTime[1]: return False
         route.insert(indOut, [rider, rider.end, 1, time2, 0] )
         route = self.adjustTimesCopy(route)
-        if route[len(route) - 1][3] + self.T[route[len(route)-1][1]][self.end] > self.arrivalTime[1]: return False
-        if route[len(route) -1][3] + self.T[route[len(route) -1][1]][self.end] - self.startTime > self.maxTime:
+        if route[len(route) - 1][3] + self.T[route[len(route)-1][1]][self.end] + route[len(route) - 1][4]> self.arrivalTime[1]: return False
+        if route[len(route) -1][3] + self.T[route[len(route) -1][1]][self.end] + route[len(route) - 1][4] - self.startTime > self.maxTime:
             #print(route[len(route) -1][3] + self.T[route[len(route) -1][1]][self.end] - self.depTime[0])
             #print(self.maxTime)
             return False
@@ -120,11 +120,11 @@ class Driver:
         if index == len(self.stops) - 1: # želimo ridera ubaciti kao zadnju stanicu
             stop = self.stops[len(self.stops) - 1] 
             time3 = stop[3] #vrijeme kad smo došli na stop
-            return time3 + self.T[stop[1]][loc] + self.T[loc][self.end] <= self.depTime[1] # time3 + vrijeme potrebno od stop do loc + vrijeme potrebno zs od loc do cilja vozača mora bit manji od planiranog dolaska vozača
+            return time3 + self.T[stop[1]][loc] + self.T[loc][self.end] <= self.arrivalTime[1] # time3 + vrijeme potrebno od stop do loc + vrijeme potrebno zs od loc do cilja vozača mora bit manji od planiranog dolaska vozača
         if index == len(self.stops):#jedino kad ridera želimo ubaciti na kraj liste (to je onda stanica di ga ostavljamo jer smo ga pokupili na indexu len(self.stops) (tak bi trebalo biti))
              stop = self.stops[len(self.stops) - 1] 
-             time3 = stop[3] + self.T[stop[1]][rider.start] #vrijeme kad smo došli na rider.start
-             return time3 + self.T[rider.start][loc] + self.T[loc][self.end] <= self.depTime[1]
+             time3 = stop[3] + self.T[stop[1]][rider.start] + stop[4] #vrijeme kad smo došli na rider.start
+             return time3 + self.T[rider.start][loc] + self.T[loc][self.end] <= self.arrivalTime[1]
         stop1 = self.stops[index] # ubacujemo ga između stop1 i stop2
         stop2 = self.stops[index+1]
         time1 = stop1[3] + stop1[4]#vrijeme kad smo došli na stop1
@@ -134,12 +134,13 @@ class Driver:
         return time1 + self.T[stop1[1]][loc] + self.T[loc][stop2[1]] <= time2
     
     def adjustTimes(self): #adjust waiting time - dodaj za auto
+        if not len(self.stops): return
         self.stops[0][3] = self.startTime + self.T[self.start][self.stops[0][1]]
         self.stops[0][4] = max(0, self.stops[0][0].depTime[0] - self.stops[0][3])
         for i in range(len(self.stops)-1):
             self.stops[i+1][3] = self.stops[i][3] + self.T[self.stops[i+1][1]][self.stops[i][1]] + self.stops[i][4]
             self.stops[i+1][4] = max(0, self.stops[i+1][0].depTime[0] - self.stops[i+1][3])
-        self.endTime = self.stops[len(self.stops)-1][3] + self.T[self.stops[len(self.stops)-1][1]][self.end]
+        self.endTime = self.stops[len(self.stops)-1][3] + self.T[self.stops[len(self.stops)-1][1]][self.end] + self.stops[len(self.stops)-1][4]
     
     def pushForwardAll(self, indOfStop, pf): #dodaj posebni slučaj ako se pomiče sve nakon driver.start
         for i in range(indOfStop, len(self.stops)):
@@ -196,7 +197,7 @@ class Driver:
         return tkn
     
     def printDriver(self):
-        listDriver = [self.id, self.start, self.end, self.depTime, self.arrivalTime, self.capacity, self.taken]
+        listDriver = [self.id, self.start, self.end, self.depTime, self.arrivalTime, self.capacity, self.taken, self.startTime, self.endTime]
         print(listDriver)
         for stop in self.stops:
             strr = stop[0].toString() + ", " + str(stop[1]) + ", " + str(stop[2]) + ", " + str(stop[3]) + ", " + str(stop[4])
