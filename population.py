@@ -22,9 +22,9 @@ class Population:
             solution.initialize()
             self.solutions.append(solution)
         
-        self.bestSolution = self.solutions[0]
-        self.evaluate()
-        self.bestValue = self.solutions[0].fitness
+        #self.bestSolution = self.solutions[0].copy()
+        #self.evaluate()
+        #self.bestValue = self.solutions[0].fitness
         #self.initialize(riderData, driverData, distMatrix, timeMatrix)
 
     def initialize(self, riderData, driverData, distMatrix, timeMatrix): #inicijaliziraj početnu populaciju
@@ -53,12 +53,13 @@ class Population:
 
     
     def findBestSolutions(self): #pronađi najbolja rješenja (najmanja funkcija dobrote) za elitizam i spremi bestValue (i možda najbolje rješenje)
-        minSol = self.bestSolution
-        minVal = self.bestValue
+        minSol = self.solutions[0]
+        minVal = minSol.fitness
+        #minVal = self.bestValue
         #print("minVal na početku je " + str(minVal))
         secMinSol = 0
         for solution in self.solutions:
-            if solution.fitness < minVal and solution.fitness < self.bestValue:
+            if solution.fitness < minVal:# and solution.fitness < self.bestValue:
                 minSol = solution
                 minVal = solution.fitness
         self.bestValue = minVal
@@ -71,7 +72,26 @@ class Population:
             if solution.fitness <= secMinVal and self.solutions.index(solution) != self.solutions.index(minSol):
                 secMinVal = solution.fitness
                 secMinSol = solution
-        return minSol, secMinSol
+        return minSol.copy(), secMinSol.copy()
+    
+    def findBestSolutions2(self):
+        bestSol = 0
+        bestVal = 0
+        secBestSol = 0
+        for solution in self.solutions:
+         #   print(len(solution.unmatched))
+            if 1/solution.fitness > bestVal:# and solution.fitness < self.bestValue:
+                bestSol = solution
+                bestVal = 1/solution.fitness
+        self.bestValue = bestSol.fitness
+        self.bestSolution = bestSol.copy()
+        secBestVal = 0
+        for solution in self.solutions:
+            if 1/solution.fitness >= secBestVal and self.solutions.index(solution) != self.solutions.index(bestSol):
+                secBestVal = 1/solution.fitness
+                secBestSol = solution
+        return bestSol, secBestSol
+
 
     def rouletteWheelSelection(self):
         sumOfFitness = 0
