@@ -66,9 +66,9 @@ class Prozor(Frame):
         return
 
     def izracunaj(self):
-        value, S, matched, distance = genAlg(self.riders, self.drivers, self.distMat, self.timeMat)
+        value, S, matched, distance, time, riderTime = genAlg(self.riders, self.drivers, self.distMat, self.timeMat)
         s = S[len(S) - 1]
-        self.vlabel.set('Izracun uspjesan!\n Broj nesparenih putnika u generaciji: ' + str(len(s.unmatched)))
+        self.vlabel.set('Izracun uspjesan!\n Broj nesparenih putnika: ' + str(len(s.unmatched)) + '\nBroj sparenih putnika: ' + str(len(s.riders)-len(s.unmatched)))
         #for i in value:
             #print(i)
         #print('end val')
@@ -131,7 +131,7 @@ class Prozor(Frame):
             self.k_label = ['' for i in range(len(self.koordinate))]"""
 
         poruka += 'Broj nesparenih putnika u gen ' + str(br) + ': ' + str(len(s.unmatched))
-        self.vlabel1.set(poruka)
+        #self.vlabel1.set(poruka)
         n = len(s.routes)   #broj drivera (routes) u solution (uzeti n-1!)
         X = []
         Y = []
@@ -181,9 +181,11 @@ class Prozor(Frame):
             route.printDriver()
         print(value[len(value) - 1])
         graf.main(G)
+        graf.plotSolutionOnMap(G)
         graphValues.graphValues(value)
-        graphValues.graphUnmatched(matched)
-        graphValues.graphDistance(distance)
+        #graphValues.graphUnmatched(matched)
+        #graphValues.graphDistance(distance)
+        graphValues.graphAll(value,matched, distance, time, riderTime)
         
         return
 
