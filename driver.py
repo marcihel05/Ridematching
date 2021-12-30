@@ -85,11 +85,13 @@ class Driver:
             return False
         w1 = max(0, rider.depTime[0] - time1)
         route.insert(indIn, [rider, rider.start, 0, time1, w1] )
+        route = self.adjustTimesCopy(route)
         time2 = route[indOut-1][3] + self.T[route[indOut-1][1]][rider.end] + route[indOut-1][4]
         if time2 > rider.arrivalTime[1]: return False
+        if time2 - time1 > rider.maxTime: return False
         route.insert(indOut, [rider, rider.end, 1, time2, 0] )
         route = self.adjustTimesCopy(route)
-        if route[len(route) - 1][3] + self.T[route[len(route)-1][1]][self.end] + route[len(route) - 1][4]> self.arrivalTime[1]: return False
+        if route[len(route) - 1][3] + self.T[route[len(route)-1][1]][self.end] + route[len(route) - 1][4] > self.arrivalTime[1]: return False
         if route[len(route) -1][3] + self.T[route[len(route) -1][1]][self.end] + route[len(route) - 1][4] - self.startTime > self.maxTime:
             #print(route[len(route) -1][3] + self.T[route[len(route) -1][1]][self.end] - self.depTime[0])
             #print(self.maxTime)
@@ -102,6 +104,7 @@ class Driver:
                     if rider.id == route[j][0].id: #tu ga ostavljamo
                        if route[j][3] > route[j][0].arrivalTime[1]: return False #dolazi prekasno
                        if route[j][3] - route[i][3] > rider.maxTime: return False
+                       break # prekida for j
             
         return True
 
@@ -141,6 +144,8 @@ class Driver:
             self.stops[i+1][3] = self.stops[i][3] + self.T[self.stops[i+1][1]][self.stops[i][1]] + self.stops[i][4]
             self.stops[i+1][4] = max(0, self.stops[i+1][0].depTime[0] - self.stops[i+1][3])
         self.endTime = self.stops[len(self.stops)-1][3] + self.T[self.stops[len(self.stops)-1][1]][self.end] + self.stops[len(self.stops)-1][4]
+        if self.endTime - self.startTime < 0: print("dosel sam prije nego sam krenul")
+        
     
     def pushForwardAll(self, indOfStop, pf): #dodaj posebni slučaj ako se pomiče sve nakon driver.start
         for i in range(indOfStop, len(self.stops)):
@@ -166,7 +171,8 @@ class Driver:
 
     
     def adjustTimesCopy(self, route): #dodaj za auto
-        copy = [stop.copy() for stop in route]
+        #copy = [stop.copy() for stop in route]
+        copy = route
         copy[0][3] = self.startTime + self.T[self.start][copy[0][1]]
         for i in range(len(copy)-1):
             copy[i+1][3] = copy[i][3] + self.T[copy[i+1][1]][copy[i][1]] + copy[i][4]
@@ -186,6 +192,11 @@ class Driver:
             else: cap -= self.stops[i][0].numOfPassengers
             if cap >= self.capacity: return False
         return True
+    
+    def exists(self, id):
+        for stop in self.stops:
+            if stop[0].id == id: return True
+        return False
 
     
     def calculateTakenSeats(self):

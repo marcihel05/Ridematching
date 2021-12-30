@@ -48,7 +48,7 @@ def genAlg(riderData, driverData, distMatrix, timeMatrix):
             newRoutes.append(child1)
             newRoutes.append(child2)
         population.solutions = newRoutes
-        for i in range(2, len(population.solutions)): population.solutions[i].insertUnmatched()
+        #for i in range(2, len(population.solutions)): population.solutions[i].insertUnmatched()
         numOfIt+=1
-    return valueOfFunc, bestSolutions, numOfMatched, distance
+    return valueOfFunc, bestSolutions, numOfMatched, distance, time, riderTime
         
