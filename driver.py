@@ -103,7 +103,7 @@ class Driver:
                 for j in range(i+1, len(route)):
                     if rider.id == route[j][0].id: #tu ga ostavljamo
                        if route[j][3] > route[j][0].arrivalTime[1]: return False #dolazi prekasno
-                       if route[j][3] - route[i][3] > rider.maxTime: return False
+                       if route[j][3] - route[i][3] - route[i][4] > rider.maxTime: return False
                        break # prekida for j
             
         return True
