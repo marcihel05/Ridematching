@@ -32,8 +32,8 @@ def times(locations, distances):
     for i in range(len(locations)):
         pom_list = list()
         for j in range(len(locations)):
-            a = ceil(distances[i][j]/V)
-            #aa = int((a * 100) + 0.5) / 100.0 
-            pom_list.append(a)
+            a = distances[i][j]/V
+            #aa = int((a * 10) + 0.5) / 10.0 
+            pom_list.append(ceil(a))
         time_between_locations.append(pom_list)
     return time_between_locations

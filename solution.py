@@ -86,8 +86,8 @@ class Solution:
             
         
     def mutate(self):
-        #self.pushBackward() #popraviti 
-        #self.pushForward() #popraviti
+        self.pushBackward() #popraviti 
+        self.pushForward() #popraviti
         self.removeInsert()
         self.transfer()
         self.swap() #postaviti provjere
@@ -95,7 +95,7 @@ class Solution:
     def pushBackward(self): #first mutation operator #dodaj vozača
         for route in self.routes:
             r = random.random()
-            if r < MUTATION_RATE and len(route.stops) > 0: #mutiraj
+            if r < MUTATION_RATE and len(route.stops) < 0: #mutiraj
                 i = random.randrange(-1, len(route.stops))
                 if i == -1:
                     if route.startTime - route.depTime[0] > 0: pb = ceil(random.uniform(0, route.startTime - route.depTime[0]))
@@ -113,11 +113,17 @@ class Solution:
                     stop[4] = max(0, stop[0].depTime[0] - stop[3])
                 route.pushBackwardAll(i+1, pb)
                 #route.calculateTakenSeats()
+            elif r < MUTATION_RATE and not len(route.stops):
+                 if route.startTime - route.depTime[0] > 0: pb = ceil(random.uniform(0, route.startTime - route.depTime[0]))
+                 else: continue
+                 if route.endTime - pb < route.arrivalTime[0]: continue
+                 route.startTime -= pb
+                 route.endTime -= pb
     
     def pushForward(self): #second mutation operator 
         for route in self.routes:
             r = random.random()
-            if r < MUTATION_RATE and len(route.stops) > 0: #mutiraj
+            if r < MUTATION_RATE and len(route.stops) < 0: #mutiraj
                 nope = False
                 i = random.randrange(-1, len(route.stops))
                 if i == -1:
@@ -169,6 +175,14 @@ class Solution:
                     
                 route.pushForwardAll(i+1, pf)
                 #route.calculateTakenSeats()
+            elif r < MUTATION_RATE and not len(route.stops):
+                if route.depTime[1] - route.startTime > 0: 
+                    pf = ceil(random.uniform(0, route.depTime[1] - route.startTime))
+                    if pf + route.endTime > route.arrivalTime[1]: continue
+                    else:
+                        route.startTime += pf
+                        route.endTime += pf
+
 
             
     
@@ -192,7 +206,14 @@ class Solution:
                 for rider in self.unmatched:
                     #self.tryToInsert2(rider, route)
                     if self.tryToInsert2(rider, route): self.unmatched.remove(rider)
-                    route.adjustTimes()
+                        #route.adjustTimes()
+            elif r < MUTATION_RATE and not len(route.stops):
+                random.shuffle(self.unmatched)
+                for rider in self.unmatched:
+                #self.tryToInsert2(rider, route)
+                    if self.tryToInsert2(rider, route): self.unmatched.remove(rider)
+                        
+                        #route.adjustTimes()
                 #route.calculateTakenSeats()
                 #self.modifyUnmatched()
 
@@ -214,7 +235,7 @@ class Solution:
                     if ind > -1: route.stops.pop(ind)
                     else: print("something's wrong in transfer " + str(self.routes.index(route)))
                     route.adjustTimes()
-                    route.calculateTakenSeats()
+                    #route.calculateTakenSeats()
     
     def swap(self): #fifth mutation operator
         for route in self.routes:

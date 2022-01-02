@@ -97,10 +97,10 @@ class Population:
         sumOfFitness = 0
         for solution in self.solutions:
             sumOfFitness += solution.fitness
-        r = random.uniform(0,1)
+        r = random.random()
         sum = 0
         for solution in self.solutions:
-            sum += (solution.fitness/sumOfFitness)
+            sum += (1 - solution.fitness/sumOfFitness)
             if sum > r: return solution
         return self.solutions[len(self.solutions)-1]
     
