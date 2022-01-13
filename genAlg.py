@@ -3,8 +3,8 @@ from solution import *
 
 from settings import *
 
-def genAlg(riderData, driverData, distMatrix, timeMatrix):
-    population = Population(riderData, driverData, distMatrix, timeMatrix)
+def genAlg(riderData, driverData, distMatrix, timeMatrix, vals):
+    population = Population(riderData, driverData, distMatrix, timeMatrix, vals)
     #print("imamo populaciju")
     numOfIt = 0
     valueOfFunc = [] #lista vrijednosti funkcije po iteracijama
@@ -13,12 +13,12 @@ def genAlg(riderData, driverData, distMatrix, timeMatrix):
     distance = []
     time = []
     riderTime = []
-    while numOfIt < NUM_OF_ITERATIONS: # or while |oldFunc-newFunc| > EPSILON
+    while numOfIt < vals[9]: # or while |oldFunc-newFunc| > EPSILON
         #print(numOfIt)
         print(numOfIt)
         newRoutes = []
         #print("best value prije eval " + str(population.bestValue))
-        population.evaluate()
+        population.evaluate(vals[0:4])
         #print("evaluated")
         #print("best value nakon eval " + str(population.bestValue))
         best1, best2 = population.findBestSolutions2()
@@ -32,7 +32,7 @@ def genAlg(riderData, driverData, distMatrix, timeMatrix):
         riderTime.append(best1.riderTime)
         newRoutes.append(best1)
         newRoutes.append(best2)
-        while len(newRoutes) < NUM_OF_SOLUTIONS:
+        while len(newRoutes) < vals[8]:
             parent1 = population.selection()
             #parent1 = population.rouletteWheelSelection()
             parent2 = population.selection()
@@ -41,8 +41,8 @@ def genAlg(riderData, driverData, distMatrix, timeMatrix):
             #child = parent1.crossover2(parent2)
             #child.mutate()
             #newRoutes.append(child)
-            child1.mutate()
-            child2.mutate()
+            child1.mutate(vals[10])
+            child2.mutate(vals[10])
             newRoutes.append(child1)
             newRoutes.append(child2)
         population.solutions = newRoutes
