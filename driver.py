@@ -1,7 +1,7 @@
 from settings import *
 
 class Driver:
-    def __init__(self, distMatrix = [], timeMatrix = [], data = []):
+    def __init__(self, distMatrix = [], timeMatrix = [], data = [], vals = []):
         self.id = 0
         self.start = 0
         self.end = 0
@@ -17,17 +17,17 @@ class Driver:
         self.endTime = 0 #ukomponiraj
         self.startTime = 0 #ukomponiraj
         self.distance = 0
-        if len(data):self.initialize(data)
+        if len(data):self.initialize(data, vals)
     
-    def initialize(self, data):
+    def initialize(self, data, vals):
         self.id = data[0]
         self.start = data[1]
         self.end = data[2]
         self.depTime = data[3]
         self.arrivalTime = data[4]
         self.capacity = data[5]
-        self.maxDist = self.D[self.start][self.end] * BD + AD
-        self.maxTime = AT + BT * self.T[self.start][self.end]
+        self.maxDist = self.D[self.start][self.end] * vals[3] + vals[2]
+        self.maxTime = vals[0] + vals[1] * self.T[self.start][self.end]
         self.startTime = self.depTime[0]
         self.endTime = self.startTime + self.T[self.start][self.end]
 
