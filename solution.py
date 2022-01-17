@@ -1,7 +1,8 @@
 import random
 from driver import *
 from settings import *
-from math import ceil
+from math import ceil, floor
+import time
 
 class Solution:
     def __init__(self, distMatrix = [],timeMatrix = [], riders = [], drivers = []):
@@ -86,11 +87,14 @@ class Solution:
             
         
     def mutate(self):
-        self.pushBackward() #popraviti 
-        self.pushForward() #popraviti
-        self.removeInsert()
-        self.transfer()
-        self.swap() #postaviti provjere
+        start = time.time()
+        self.pushBackward2() #popraviti 
+        self.pushForward2() #popraviti
+        self.removeInsert2()
+        self.transfer2()
+        self.swap2() #postaviti provjere
+        end = time.time()
+        #print("vrijeme za mutate " + str(end-start))
     
     def pushBackward(self): #first mutation operator #dodaj vozača
         for route in self.routes:
@@ -102,6 +106,7 @@ class Solution:
                     else: continue
                     route.startTime = route.startTime - pb
                 else:
+                    continue
                     stop = route.stops[i]
                     if stop[2] == 1:
                         ind = self.findIndex2(route.stops,stop[0].id)
@@ -119,6 +124,38 @@ class Solution:
                  if route.endTime - pb < route.arrivalTime[0]: continue
                  route.startTime -= pb
                  route.endTime -= pb
+    
+    def pushBackward2(self): #first mutation operator #dodaj vozača
+        randList = random.sample(range(0, self.numOfRoutes), int(floor(MUTATION_RATE*self.numOfRoutes)))
+        for j in randList:
+            route = self.routes[j]
+            if len(route.stops) < 0:  #mutiraj
+                i = random.randrange(-1, len(route.stops))
+                if i == -1:
+                    if route.startTime - route.depTime[0] > 0: pb = ceil(random.uniform(0, route.startTime - route.depTime[0]))
+                    else: continue
+                    route.startTime = route.startTime - pb
+                else:
+                    continue
+                    stop = route.stops[i]
+                    if stop[2] == 1:
+                        ind = self.findIndex2(route.stops,stop[0].id)
+                        stop = route.stops[ind]
+                    if stop[3] - stop[0].depTime[0] > 0: pb = ceil(random.uniform(0, ceil(stop[3] - stop[0].depTime[0])))
+                    else: continue
+                    if route.startTime - pb < route.depTime[0]: continue
+                    stop[3] = stop[3] - pb 
+                    stop[4] = max(0, stop[0].depTime[0] - stop[3])
+                route.pushBackwardAll(i+1, pb)
+                #route.calculateTakenSeats()
+            elif not len(route.stops):
+                 if route.startTime - route.depTime[0] > 0: pb = ceil(random.uniform(0, route.startTime - route.depTime[0]))
+                 else: continue
+                 if route.endTime - pb < route.arrivalTime[0]: continue
+                 route.startTime -= pb
+                 route.endTime -= pb
+
+
     
     def pushForward(self): #second mutation operator 
         for route in self.routes:
@@ -146,6 +183,7 @@ class Solution:
                     route.startTime = route.startTime + pf
                     #print("start nakon pf " + str(route.startTime) + " id " + str(route.id) )
                 else:
+                    continue
                     stop = route.stops[i]
                     if stop[2] == 1:
                         ind = self.findIndex2(route.stops,stop[0].id)
@@ -183,6 +221,70 @@ class Solution:
                         route.startTime += pf
                         route.endTime += pf
 
+    def pushForward2(self): #second mutation operator 
+        randList = random.sample(range(0, self.numOfRoutes), int(floor(MUTATION_RATE*self.numOfRoutes)))
+        for j in randList:
+            route = self.routes[j]
+            if len(route.stops) < 0:  #mutiraj
+                nope = False
+                i = random.randrange(-1, len(route.stops))
+                if i == -1:
+                    #print("pomicem drivera napred")
+                    #print("start prije pf " + str(route.startTime) + " id " + str(route.id))
+                    if route.depTime[1] - route.startTime > 0: 
+                        pf = ceil(random.uniform(0, route.depTime[1] - route.startTime))
+                        if pf + route.endTime > route.arrivalTime[1]: continue
+                        for stop in route.stops:
+                            if stop[2] == 0:
+                                if stop[2] + pf > stop[0].depTime[1]:
+                                    nope = True
+                                    break
+                            else:
+                                if stop[2] + pf > stop[0].arrivalTime[1]:
+                                    nope = True
+                                    break
+                        if nope: continue
+                    else: continue
+                    route.startTime = route.startTime + pf
+                    #print("start nakon pf " + str(route.startTime) + " id " + str(route.id) )
+                else:
+                    continue
+                    stop = route.stops[i]
+                    if stop[2] == 1:
+                        ind = self.findIndex2(route.stops,stop[0].id)
+                        stop = route.stops[ind]
+                    #if stop[2] == 1: return
+                    if stop[0].depTime[1] - stop[3] > 0: 
+                        pf = ceil(random.uniform(0, stop[0].depTime[1] - stop[3]))
+                        if pf + route.endTime > route.arrivalTime[1]: continue
+                        for i in range(route.stops.index(stop), len(route.stops)):
+                            stop = route.stops[i]
+                            if stop[2] == 0:
+                                if stop[2] + pf > stop[0].depTime[1]:
+                                    nope = True
+                                    break
+                                else:
+                                    if stop[2] + pf > stop[0].arrivalTime[1]:
+                                        nope = True
+                                        break
+                        if nope: continue
+                    else: continue
+                    #if stop[3] + stop[4] > stop[0].depTime[1]: print("prekasno prije pb") 
+                    #if stop[3] + stop[4] < stop[0].depTime[0]: print("prerano prije pb") 
+                    stop[3] = stop[3] + pf
+                    stop[4] = max(0, stop[0].depTime[0] - stop[3])
+                    #if stop[3] + stop[4] < stop[0].depTime[0]: print("prerano")
+                    #if stop[3] +stop[4] > stop[0].depTime[1]: print("prekasno")
+                    
+                route.pushForwardAll(i+1, pf)
+                #route.calculateTakenSeats()
+            elif not len(route.stops):
+                if route.depTime[1] - route.startTime > 0: 
+                    pf = ceil(random.uniform(0, route.depTime[1] - route.startTime))
+                    if pf + route.endTime > route.arrivalTime[1]: continue
+                    else:
+                        route.startTime += pf
+                        route.endTime += pf
 
             
     
@@ -212,17 +314,65 @@ class Solution:
                 for rider in self.unmatched:
                 #self.tryToInsert2(rider, route)
                     if self.tryToInsert2(rider, route): self.unmatched.remove(rider)
+
+    def removeInsert2(self): #third mutation operator
+        randList = random.sample(range(0, self.numOfRoutes), int(floor(MUTATION_RATE*self.numOfRoutes)))
+        #print(randList)
+        for j in randList:
+            route = self.routes[j]
+            if len(route.stops) > 0:  #mutiraj
+                i = random.randrange(len(route.stops))
+                stop = route.stops[i]
+                #if stop[2] == 1: ind = self.findIndex2(route.stops, stop[0].id)
+                #else: ind = self.findIndex(route.stops, stop[0].id)
+                    #stop = route.stops[ind]
+                self.unmatched.append(stop[0])
+                route.stops.remove(stop)
+                if stop[2] == 1: ind = self.findIndex2(route.stops, stop[0].id)
+                else: ind = self.findIndex(route.stops, stop[0].id)
+                if ind > -1: route.stops.pop(ind)
+                else: print("something's wrong in remove insert " +str(self.routes.index(route)))
+                route.adjustTimes()
+                random.shuffle(self.unmatched)
+                for rider in self.unmatched:
+                    #self.tryToInsert2(rider, route)
+                    if self.tryToInsert2(rider, route): self.unmatched.remove(rider)
+                        #route.adjustTimes()
+            elif not len(route.stops):
+                random.shuffle(self.unmatched)
+                #rndRiders = random.sample(range(0, len(self.unmatched)), int(floor(MUTATION_RATE*len(self.unmatched))))
+                #unmatchedCopy = [self.unmatched[k] for k in rndRiders]
+                for rider in self.unmatched:
+                #for rider in unmatchedCopy:
+                #self.tryToInsert2(rider, route)
+                    #rider = unmatchedCopy[k]
+                    if self.tryToInsert2(rider, route): self.unmatched.remove(rider)
                         
                         #route.adjustTimes()
                 #route.calculateTakenSeats()
                 #self.modifyUnmatched()
-
                 
     
     def transfer(self): #fourth mutation operator
         for route in self.routes:
             r = random.random()
             if r < MUTATION_RATE and len(route.stops) > 0: #mutiraj
+                i = random.randrange(len(route.stops))
+                stop = route.stops[i]
+                if self.tryToInsert(stop[0], route.id):
+                    route.stops.remove(stop)
+                    if stop[2] == 1: ind = self.findIndex2(route.stops, stop[0].id)
+                    else: ind = self.findIndex(route.stops, stop[0].id)
+                    if ind > -1: route.stops.pop(ind)
+                    else: print("something's wrong in transfer " + str(self.routes.index(route)))
+                    route.adjustTimes()
+                    #route.calculateTakenSeats()
+    
+    def transfer2(self): #fourth mutation operator
+        randList = random.sample(range(0, self.numOfRoutes), int(floor(MUTATION_RATE*self.numOfRoutes)))
+        for j in randList:
+            route = self.routes[j]
+            if len(route.stops) > 0: #mutiraj
                 i = random.randrange(len(route.stops))
                 stop = route.stops[i]
                 #if stop[2] == 1: ind = self.findIndex2(route.stops, stop[0].id)
@@ -236,6 +386,7 @@ class Solution:
                     else: print("something's wrong in transfer " + str(self.routes.index(route)))
                     route.adjustTimes()
                     #route.calculateTakenSeats()
+
     
     def swap(self): #fifth mutation operator
         for route in self.routes:
@@ -252,7 +403,25 @@ class Solution:
                     route.stops[i+1] = s1
                     route.adjustTimes()
 
+    def swap2(self): #fifth mutation operator
+        randList = random.sample(range(0, self.numOfRoutes), int(floor(MUTATION_RATE*self.numOfRoutes)))
+        for j in randList:
+            route = self.routes[j]
+            if len(route.stops) > 0: #mutiraj
+                i = random.randrange(len(route.stops))
+                if i == len(route.stops) -1 : i -= 1
+                if route.stops[i][0].id != route.stops[i+1][0].id:
+                    #print("swap: " + str(route.id))
+                    #route.stops[i], route.stops[i+1] = route.stops[i+1].copy(), route.stops[i].copy()
+                    s1 = route.stops[i].copy()
+                    s2 = route.stops[i+1].copy()
+                    route.stops[i] = s2
+                    route.stops[i+1] = s1
+                    route.adjustTimes()
+
+
     def crossover(self, otherSolution):
+        start = time.time()
         newSolution1 = self.copy()
         newSolution2 = otherSolution.copy()
         routeIndex = random.randrange(self.numOfRoutes)
@@ -265,8 +434,10 @@ class Solution:
         newSolution2.checkIfFeasibleAfterCrossAndFix(routeIndex)
         newSolution1.modifyUnmatched()
         newSolution2.modifyUnmatched()
-        newSolution1.insertUnmatched()
-        newSolution2.insertUnmatched()
+        #newSolution1.insertUnmatched()
+        #newSolution2.insertUnmatched()
+        end = time.time()
+        #print("vrijeme za crossover " + str(end-start))
         return newSolution1, newSolution2
     
     def crossover2(self, otherSolution):
@@ -279,7 +450,7 @@ class Solution:
         newSolution.insertUnmatched()
         return newSolution
     
-    def calculateFitness(self): #racunaj funkciju dobrote (po onoj formuli) #DOVRŠITI
+    def calculateFitness(self): #racunaj funkciju dobrote (po onoj formuli)
         val = 0
         dist = 0
         maxDist = 0
@@ -300,11 +471,8 @@ class Solution:
             for stop in driver.stops:
                 if stop[2] == 0:
                     ind = self.findIndex(driver.stops, stop[0].id)
-                    #for i in range(driver.stops.index(stop) + 1, len(driver.stops)):
-                        #if driver.stops[i][0].id == stop[0].id and driver.stops[i][2] == 1:
                     riderTime += (driver.stops[ind][3] - stop[3] - stop[4])
                     maxRiderTime += stop[0].maxTime
-                    #break #prekida for i
         self.distance = dist
         self.time = time
         self.riderTime = riderTime
@@ -324,6 +492,7 @@ class Solution:
         #print(val)
 
     def checkIfFeasibleAfterCrossAndFix(self, routeIndex): #pogledaj dal više vozača ne vozi istog putnika i makni ako ima toga
+        start = time.time()
         for i in range(routeIndex):
             for stop1 in self.routes[i].stops:
                 if stop1[2] == 0:
@@ -339,8 +508,11 @@ class Solution:
                                 if ind > -1: self.routes[j].stops.pop(ind)
                                 #else: print("smoething's wrong")
                                 self.routes[j].adjustTimes()
+        end = time.time()
+        #print("vrijeme za check if feasible " + str(end-start))
     
     def modifyUnmatched(self):
+        start = time.time()
         unmatchedNew = []
         for rider in self.riders:
             exists = False
@@ -351,21 +523,15 @@ class Solution:
             if not exists:
                 unmatchedNew.append(rider)
         self.unmatched = unmatchedNew.copy()
+        end = time.time()
+        #print("vrijeme za modify unmatched " + str(end-start))
     
     def insertUnmatched(self):
-        #l = [i for i in range(len(self.unmatched))]
-        #while len(l):
-         #   rnd = random.randrange(len(l))
-          #  rider = self.unmatched[l[rnd]]
-           # for i in range(rnd+1, len(l)): l[i] -=1
-            #l.remove(l[rnd])
         random.shuffle(self.unmatched)
         for rider in self.unmatched:
             if self.tryToInsert(rider): self.unmatched.remove(rider)
-            #self.tryToInsert(rider)
-        #self.modifyUnmatched()
 
-    def tryToInsert(self, rider, routeId = -1): #probaj ga negde staviti - POPRAVITI
+    def tryToInsert(self, rider, routeId = -1): #probaj ga negde staviti 
         driversCopy = [i for i in range(len(self.routes))]
         while len(driversCopy):
         #for driver in self.routes:
@@ -411,7 +577,7 @@ class Solution:
                                             return True
         return False
 
-    def tryToInsert2(self, rider, driver, routeIndex = -1): #probaj ga negde staviti - POPRAVITI
+    def tryToInsert2(self, rider, driver, routeIndex = -1): #probaj ga negde staviti 
         if self.routes.index(driver) != routeIndex:
             if driver.depTime[0] < rider.depTime[1] and driver.arrivalTime[1] > rider.arrivalTime[0]: #vremenski okvir je okej
                 if len(driver.stops) == 0:

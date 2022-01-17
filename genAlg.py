@@ -1,6 +1,6 @@
 from population import *
 from solution import *
-
+import time
 from settings import *
 
 def genAlg(riderData, driverData, distMatrix, timeMatrix):
@@ -11,9 +11,10 @@ def genAlg(riderData, driverData, distMatrix, timeMatrix):
     bestSolutions = []
     numOfMatched = []
     distance = []
-    time = []
+    timee = []
     riderTime = []
     while numOfIt < NUM_OF_ITERATIONS: # or while |oldFunc-newFunc| > EPSILON
+        start = time.time()
         #print(numOfIt)
         print(numOfIt)
         newRoutes = []
@@ -28,7 +29,7 @@ def genAlg(riderData, driverData, distMatrix, timeMatrix):
         bestSolutions.append(best1)
         numOfMatched.append(len(riderData)-len(best1.unmatched))
         distance.append(best1.distance)
-        time.append(best1.time)
+        timee.append(best1.time)
         riderTime.append(best1.riderTime)
         newRoutes.append(best1)
         newRoutes.append(best2)
@@ -46,7 +47,9 @@ def genAlg(riderData, driverData, distMatrix, timeMatrix):
             newRoutes.append(child1)
             newRoutes.append(child2)
         population.solutions = newRoutes
+        end = time.time()
+        print("vrijeme za jednu populaciju " + str(end-start))
         #for i in range(2, len(population.solutions)): population.solutions[i].insertUnmatched()
         numOfIt+=1
-    return valueOfFunc, bestSolutions, numOfMatched, distance, time, riderTime
+    return valueOfFunc, bestSolutions, numOfMatched, distance, timee, riderTime
         
