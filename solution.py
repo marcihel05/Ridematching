@@ -93,7 +93,10 @@ class Solution:
         self.swap(rate) #postaviti provjere
     
     def pushBackward(self, rate): #first mutation operator #dodaj vozača
-        for route in self.routes:
+        #for route in self.routes:
+        l = random.sample(range(0,len(self.routes)),50)
+        for i in l:
+            route = self.routes[i]
             r = random.random()
             if r < rate and len(route.stops) < 0: #mutiraj
                 i = random.randrange(-1, len(route.stops))
@@ -121,7 +124,10 @@ class Solution:
                  route.endTime -= pb
     
     def pushForward(self, rate): #second mutation operator 
-        for route in self.routes:
+        #for route in self.routes:
+        l = random.sample(range(0,len(self.routes)),50)
+        for i in l:
+            route = self.routes[i]
             r = random.random()
             if r < rate and len(route.stops) < 0: #mutiraj
                 nope = False
@@ -187,7 +193,10 @@ class Solution:
             
     
     def removeInsert(self, rate): #third mutation operator
-        for route in self.routes:
+        #for route in self.routes:
+        l = random.sample(range(0,len(self.routes)),50)
+        for i in l:
+            route = self.routes[i]
             r = random.random()
             if r < rate and len(route.stops) > 0:  #mutiraj
                 i = random.randrange(len(route.stops))
@@ -220,7 +229,10 @@ class Solution:
                 
     
     def transfer(self, rate): #fourth mutation operator
-        for route in self.routes:
+        #for route in self.routes:
+        l = random.sample(range(0,len(self.routes)),50)
+        for i in l:
+            route = self.routes[i]
             r = random.random()
             if r < rate and len(route.stops) > 0: #mutiraj
                 i = random.randrange(len(route.stops))
@@ -238,7 +250,10 @@ class Solution:
                     #route.calculateTakenSeats()
     
     def swap(self, rate): #fifth mutation operator
-        for route in self.routes:
+        #for route in self.routes:
+        l = random.sample(range(0,len(self.routes)),50)
+        for i in l:
+            route = self.routes[i]
             r = random.random()
             if r < rate and len(route.stops) > 0: #mutiraj
                 i = random.randrange(len(route.stops))
@@ -256,15 +271,28 @@ class Solution:
         newSolution1 = self.copy()
         newSolution2 = otherSolution.copy()
         routeIndex = random.randrange(self.numOfRoutes)
+        match1 = set()
+        match2 = set()
+        for i in range(routeIndex):
+            for s in newSolution1.routes[i].stops:
+                match1.add(s[0])
+            for s in newSolution2.routes[i].stops:
+                match2.add(s[0])
         for i in range(routeIndex, len(self.routes)):
             r1 = newSolution1.routes[i].copy()
             r2 = newSolution2.routes[i].copy()
             newSolution1.routes[i] = r2
             newSolution2.routes[i] = r1
+            for s in newSolution1.routes[i].stops:
+                match1.add(s[0])
+            for s in newSolution2.routes[i].stops:
+                match2.add(s[0])
         newSolution1.checkIfFeasibleAfterCrossAndFix(routeIndex)
         newSolution2.checkIfFeasibleAfterCrossAndFix(routeIndex)
-        newSolution1.modifyUnmatched()
-        newSolution2.modifyUnmatched()
+        #newSolution1.modifyUnmatched()
+        #newSolution2.modifyUnmatched()
+        newSolution1.unmatched = list(set(self.riders)-match1)
+        newSolution2.unmatched = list(set(self.riders)-match2)
         newSolution1.insertUnmatched()
         newSolution2.insertUnmatched()
         return newSolution1, newSolution2
@@ -363,9 +391,16 @@ class Solution:
           #  rider = self.unmatched[l[rnd]]
            # for i in range(rnd+1, len(l)): l[i] -=1
             #l.remove(l[rnd])
-        random.shuffle(self.unmatched)
+        #random.shuffle(self.unmatched)
+        self.unmatched.sort(key = lambda x: x.depTime[0])
+        for driver in self.routes:
         for rider in self.unmatched:
-            if self.tryToInsert(rider): self.unmatched.remove(rider)
+            #if self.tryToInsert(rider): self.unmatched.remove(rider)
+            if rider.arrivalTime[0] > driver.arrivalTime[1]:
+                break
+            if rider.depTime[1] < driver.depTime[0]:
+                continue
+            if self.tryToInsert2(rider,driver): self.unmatched.remove(rider)
             #self.tryToInsert(rider)
         #self.modifyUnmatched()
 
