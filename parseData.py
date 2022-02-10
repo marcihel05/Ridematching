@@ -32,7 +32,7 @@ def parseData(data): # data - txt file
         driver.append((int(driverSplit[5]), int(driverSplit[6])))
         #ar time window
         driver.append((float(driverSplit[10]), float(driverSplit[11])))
-        driver.append(5)       #iz rada
+        driver.append(4)       #iz rada
         driverData.append(driver)
 
     for i in range(numOfRiders):

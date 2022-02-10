@@ -26,7 +26,7 @@ def distances(locations):
         distance_between_locations.append(pom_list)
     return distance_between_locations
 
-def times(locations, distances):
+def times(locations, distances, V):
     from math import ceil
     time_between_locations = []
     for i in range(len(locations)):

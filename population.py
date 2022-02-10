@@ -5,17 +5,18 @@ from driver import *
 import random
 
 class Population:
-    def __init__(self, riderData, driverData, distMatrix, timeMatrix): 
+    def __init__(self, riderData, driverData, distMatrix, timeMatrix, vals): 
         self.solutions = []
         self.bestValue = 0
         self.bestSolution = 0
         self.riders = []
         self.drivers = []
         for data in riderData:
-            self.riders.append(Rider(data, timeMatrix))
+            self.riders.append(Rider(data, timeMatrix, vals[4:8]))
         for data in driverData:
-            self.drivers.append(Driver(distMatrix, timeMatrix, data))
-        while len(self.solutions) < NUM_OF_SOLUTIONS:
+            color = (random.randrange(0,255), random.randrange(0,255), random.randrange(0,255))
+            self.drivers.append(Driver(distMatrix, timeMatrix, data, vals[4:8], color))
+        while len(self.solutions) < vals[8]:
             driverCopy = [driver.copy() for driver in self.drivers]
             #riderCopy = [rider.copy() for rider in self.riders]
             solution = Solution(distMatrix,timeMatrix, self.riders, driverCopy)
@@ -31,10 +32,10 @@ class Population:
         #riderData - lista u kojoj su liste s podacima za svakog putnika(id, start, end, depTime, arrTime, brojPutnika)
         #driverData - lista u kojoj su liste s podacima za svakog vozača(id, start, end, depTime, arrTime, kapacitet)
         for data in riderData:
-            self.riders.append(Rider(data, timeMatrix))
+            self.riders.append(Rider(data, timeMatrix, vals[4:8]))
         for data in driverData:
-            self.drivers.append(Driver(distMatrix, timeMatrix, data))
-        while len(self.solutions) < NUM_OF_SOLUTIONS:
+            self.drivers.append(Driver(distMatrix, timeMatrix, data, vals[4:8]))
+        while len(self.solutions) < vals[8]:
             driverCopy = [driver.copy() for driver in self.drivers]
             #riderCopy = [rider.copy() for rider in self.riders]
             solution = Solution(distMatrix,timeMatrix, self.riders, driverCopy)
@@ -104,9 +105,16 @@ class Population:
             if sum > r: return solution
         return self.solutions[len(self.solutions)-1]
     
-    def evaluate(self):
+    def evaluate(self, vals):
         for solution in self.solutions:
-            solution.calculateFitness()
+            solution.calculateFitness(vals)
+    
+    def findWorstSolution(self):
+        sol = 0
+        for route in self.solutions:
+            if route.fitness > sol:
+                sol = route.fitness
+        return sol 
         
 
     

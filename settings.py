@@ -11,9 +11,21 @@ BD = 1.3
 
 V = 1 #km/min (60 km/h)
 
-NUM_OF_SOLUTIONS = 50
-NUM_OF_ITERATIONS = 50 #ako radimo na broj iteracija
-EPSILON = 0 #ako radimo dok se funkcija ne ustabili
+NUM_OF_SOLUTIONS = 100
+NUM_OF_ITERATIONS = 100 #ako radimo na broj iteracija
 
-MUTATION_RATE = 0.3
+MUTATION_RATE = 0.4
+
+WIN_HEIGHT = 950
+WIN_WIDTH = 1700
+GAME_WIDTH = 700
+GAME_HEIGHT = 700
+
+BLACK = (0,0,0)
+RED = (255, 0, 0)
+WHITE = (255,255,255)
+GREEN = (0, 255, 0)
+YELLOW = (255, 255, 0)
+BLUE = (0,0,255)
+ORANGE = (255,128,0)
 
