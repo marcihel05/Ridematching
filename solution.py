@@ -82,7 +82,10 @@ class Solution:
            #driver.printDriver()
        self.unmatched = ridersCopy
        self.numOfRoutes = len(self.routes)
-       #self.calcTaken()         
+       #self.calcTaken() 
+    
+       #sort drivera po dep time - za insertUnmatched2
+       self.routes.sort(key = lambda x: x.depTime[0])
             
         
     def mutate(self, rate):
@@ -213,14 +216,14 @@ class Solution:
                 route.adjustTimes()
                 random.shuffle(self.unmatched)
                 for rider in self.unmatched:
-                    #self.tryToInsert2(rider, route)
-                    if self.tryToInsert2(rider, route): self.unmatched.remove(rider)
+                    #provjera vremenskih okvira prije insert
+                    if route.depTime[0] < rider.depTime[1] and route.arrivalTime[1] > rider.arrivalTime[0] and self.tryToInsert2(rider, route): self.unmatched.remove(rider)
                         #route.adjustTimes()
             elif r < rate and not len(route.stops):
                 random.shuffle(self.unmatched)
                 for rider in self.unmatched:
-                #self.tryToInsert2(rider, route)
-                    if self.tryToInsert2(rider, route): self.unmatched.remove(rider)
+                #provjera vremenskih okvira prije insert
+                    if route.depTime[0] < rider.depTime[1] and route.arrivalTime[1] > rider.arrivalTime[0] and self.tryToInsert2(rider, route): self.unmatched.remove(rider)
                         
                         #route.adjustTimes()
                 #route.calculateTakenSeats()
@@ -293,8 +296,10 @@ class Solution:
         #newSolution2.modifyUnmatched()
         newSolution1.unmatched = list(set(self.riders)-match1)
         newSolution2.unmatched = list(set(self.riders)-match2)
-        newSolution1.insertUnmatched()
-        newSolution2.insertUnmatched()
+        #newSolution1.insertUnmatched()
+        #newSolution2.insertUnmatched()
+        newSolution1.insertUnmatched2()         #iteracija po unmacthed umjesto po routes
+        newSolution2.insertUnmatched2()
         return newSolution1, newSolution2
     
     def crossover2(self, otherSolution):
@@ -403,6 +408,42 @@ class Solution:
             if self.tryToInsert2(rider,driver): self.unmatched.remove(rider)
             #self.tryToInsert(rider)
         #self.modifyUnmatched()
+    
+    def insertUnmatched2(self):
+        for rider in self.unmatched:
+            drivers_sublist = []
+            for driver in self.routes:
+                if rider.arrivalTime[0] > driver.arrivalTime[1]:
+                    break
+                if rider.depTime[1] < driver.depTime[0]:
+                    continue
+                drivers_sublist.append(driver)
+            if len(drivers_sublist) == 0: continue 
+                
+            #random broj drivera (od onih koji odgovaraju) u koje ćemo pokusati ubaciti
+            r = random.randint(len(drivers_sublist)//4, len(drivers_sublist)//2)
+            #random sample indeksa duljine r
+            sample = random.sample(range(0,len(drivers_sublist)), r)
+            for k in sample:
+                if self.tryToInsert2(rider, drivers_sublist[k]):
+                    self.unmatched.remove(rider)
+                    break
+            
+            if rider not in self.unmatched: continue
+            #ako ridera nismo ubacili, pokusavamo u ostatku liste
+            new_try = set(range(len(drivers_sublist))) - set(sample)
+            for k in new_try:
+                if self.tryToInsert2(rider, drivers_sublist[k]):
+                    self.unmatched.remove(rider)
+                    break
+
+        #varijanta samo sa random dijelom liste - otprilike ista brzina i rezultat
+        #r = random.randint(len(drivers_sublist)//4, 3*len(drivers_sublist)//4)
+        #sample = random.sample(range(0,len(drivers_sublist)), r)
+        #for k in sample:
+            #if self.tryToInsert2(rider, drivers_sublist[k]):
+                #self.unmatched.remove(rider)
+                #break
 
     def tryToInsert(self, rider, routeId = -1): #probaj ga negde staviti - POPRAVITI
         driversCopy = [i for i in range(len(self.routes))]
@@ -450,11 +491,13 @@ class Solution:
                                             return True
         return False
 
-    def tryToInsert2(self, rider, driver, routeIndex = -1): #probaj ga negde staviti - POPRAVITI
-        if self.routes.index(driver) != routeIndex:
-            if driver.depTime[0] < rider.depTime[1] and driver.arrivalTime[1] > rider.arrivalTime[0]: #vremenski okvir je okej
+    def tryToInsert2(self, rider, driver):
+        #provjera maxdist
+        if self.D[driver.start][rider.start] + self.D[rider.start][rider.end] + self.D[rider.end][driver.end] <= driver.maxDist:
+            #provjera maxtime
+            if self.T[driver.start][rider.start] + self.T[rider.start][rider.end] + self.T[rider.end][driver.end] <= driver.maxTime:
                 if len(driver.stops) == 0:
-                    if rider.numOfPassengers <= driver.capacity and driver.checkDistance(rider, 0, 1) and driver.checkTime(rider, 0, 1):
+                    if rider.numOfPassengers <= driver.capacity and driver.checkTime(rider, 0, 1): #dist za prazno vec provjereno u prvom ifu
                         time1 = driver.depTime[0] + self.T[driver.start][rider.start]
                         w1 = max(0, rider.depTime[0] - driver.depTime[0] - self.T[driver.start][rider.start])
                         time2 = time1 + self.T[rider.start][rider.end]
