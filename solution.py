@@ -86,7 +86,10 @@ class Solution:
            #driver.printDriver()
        self.unmatched = ridersCopy
        self.numOfRoutes = len(self.routes)
-       #self.calcTaken()         
+       #self.calcTaken() 
+    
+       #sort drivera po dep time - za insertUnmatched2
+       self.routes.sort(key = lambda x: x.depTime[0])
             
         
     def mutate(self, rate):
@@ -97,7 +100,10 @@ class Solution:
         self.swap2(rate) #postaviti provjere
     
     def pushBackward(self, rate): #first mutation operator #dodaj vozača
-        for route in self.routes:
+        #for route in self.routes:
+        l = random.sample(range(0,len(self.routes)),50)
+        for i in l:
+            route = self.routes[i]
             r = random.random()
             if r < rate and len(route.stops) < 0: #mutiraj
                 i = random.randrange(-1, len(route.stops))
@@ -126,7 +132,10 @@ class Solution:
                  route.endTime -= pb
     
     def pushForward(self, rate): #second mutation operator 
-        for route in self.routes:
+        #for route in self.routes:
+        l = random.sample(range(0,len(self.routes)),50)
+        for i in l:
+            route = self.routes[i]
             r = random.random()
             if r < rate and len(route.stops) < 0: #mutiraj
                 nope = False
@@ -257,7 +266,10 @@ class Solution:
             
     
     def removeInsert(self, rate): #third mutation operator
-        for route in self.routes:
+        #for route in self.routes:
+        l = random.sample(range(0,len(self.routes)),50)
+        for i in l:
+            route = self.routes[i]
             r = random.random()
             if r < rate and len(route.stops) > 0:  #mutiraj
                 i = random.randrange(len(route.stops))
@@ -271,14 +283,18 @@ class Solution:
                 route.adjustTimes()
                 random.shuffle(self.unmatched)
                 for rider in self.unmatched:
-                    #self.tryToInsert2(rider, route)
-                    if self.tryToInsert2(rider, route): self.unmatched.remove(rider)
+                    #provjera vremenskih okvira prije insert
+                    if route.depTime[0] < rider.depTime[1] and route.arrivalTime[1] > rider.arrivalTime[0] and self.tryToInsert2(rider, route): self.unmatched.remove(rider)
                         #route.adjustTimes()
             elif r < rate and not len(route.stops):
                 random.shuffle(self.unmatched)
                 for rider in self.unmatched:
-                #self.tryToInsert2(rider, route)
-                    if self.tryToInsert2(rider, route): self.unmatched.remove(rider)
+                #provjera vremenskih okvira prije insert
+                    if route.depTime[0] < rider.depTime[1] and route.arrivalTime[1] > rider.arrivalTime[0] and self.tryToInsert2(rider, route): self.unmatched.remove(rider)
+                        
+                        #route.adjustTimes()
+                #route.calculateTakenSeats()
+                #self.modifyUnmatched()
 
     def removeInsert2(self, rate): #third mutation operator
         randList = random.sample(range(0, self.numOfRoutes), int(floor(rate*self.numOfRoutes)))
@@ -307,7 +323,10 @@ class Solution:
                 
     
     def transfer(self, rate): #fourth mutation operator
-        for route in self.routes:
+        #for route in self.routes:
+        l = random.sample(range(0,len(self.routes)),50)
+        for i in l:
+            route = self.routes[i]
             r = random.random()
             if r < rate and len(route.stops) > 0: #mutiraj
                 i = random.randrange(len(route.stops))
@@ -339,7 +358,10 @@ class Solution:
 
     
     def swap(self, rate): #fifth mutation operator
-        for route in self.routes:
+        #for route in self.routes:
+        l = random.sample(range(0,len(self.routes)),50)
+        for i in l:
+            route = self.routes[i]
             r = random.random()
             if r < rate and len(route.stops) > 0: #mutiraj
                 i = random.randrange(len(route.stops))
@@ -373,19 +395,32 @@ class Solution:
         newSolution1 = self.copy()
         newSolution2 = otherSolution.copy()
         routeIndex = random.randrange(self.numOfRoutes)
+        match1 = set()
+        match2 = set()
+        for i in range(routeIndex):
+            for s in newSolution1.routes[i].stops:
+                match1.add(s[0])
+            for s in newSolution2.routes[i].stops:
+                match2.add(s[0])
         for i in range(routeIndex, len(self.routes)):
             r1 = newSolution1.routes[i].copy()
             r2 = newSolution2.routes[i].copy()
             newSolution1.routes[i] = r2
             newSolution2.routes[i] = r1
+            for s in newSolution1.routes[i].stops:
+                match1.add(s[0])
+            for s in newSolution2.routes[i].stops:
+                match2.add(s[0])
         newSolution1.checkIfFeasibleAfterCrossAndFix(routeIndex)
         newSolution2.checkIfFeasibleAfterCrossAndFix(routeIndex)
-        newSolution1.modifyUnmatched()
-        newSolution2.modifyUnmatched()
-        if random.random() < rate: newSolution1.insertUnmatched()
-        if random.random() < rate: newSolution2.insertUnmatched()
-        end = time.time()
-        #print("vrijeme za crossover " + str(end-start))
+        #newSolution1.modifyUnmatched()
+        #newSolution2.modifyUnmatched()
+        newSolution1.unmatched = list(set(self.riders)-match1)
+        newSolution2.unmatched = list(set(self.riders)-match2)
+        #newSolution1.insertUnmatched()
+        #newSolution2.insertUnmatched()
+        newSolution1.insertUnmatched2()         #iteracija po unmacthed umjesto po routes
+        newSolution2.insertUnmatched2()
         return newSolution1, newSolution2
     
     def crossover2(self, otherSolution):
@@ -479,9 +514,60 @@ class Solution:
         #print("vrijeme za modify unmatched " + str(end-start))
     
     def insertUnmatched(self):
-        random.shuffle(self.unmatched)
+        #l = [i for i in range(len(self.unmatched))]
+        #while len(l):
+         #   rnd = random.randrange(len(l))
+          #  rider = self.unmatched[l[rnd]]
+           # for i in range(rnd+1, len(l)): l[i] -=1
+            #l.remove(l[rnd])
+        #random.shuffle(self.unmatched)
+        self.unmatched.sort(key = lambda x: x.depTime[0])
+        for driver in self.routes:
+            for rider in self.unmatched:
+                #if self.tryToInsert(rider): self.unmatched.remove(rider)
+                if rider.arrivalTime[0] > driver.arrivalTime[1]:
+                    break
+                if rider.depTime[1] < driver.depTime[0]:
+                    continue
+                if self.tryToInsert2(rider,driver): self.unmatched.remove(rider)
+            #self.tryToInsert(rider)
+        #self.modifyUnmatched()
+    
+    def insertUnmatched2(self):
         for rider in self.unmatched:
-            if self.tryToInsert(rider): self.unmatched.remove(rider)
+            drivers_sublist = []
+            for driver in self.routes:
+                if rider.arrivalTime[0] > driver.arrivalTime[1]:
+                    break
+                if rider.depTime[1] < driver.depTime[0]:
+                    continue
+                drivers_sublist.append(driver)
+            if len(drivers_sublist) == 0: continue 
+                
+            #random broj drivera (od onih koji odgovaraju) u koje ćemo pokusati ubaciti
+            r = random.randint(len(drivers_sublist)//4, len(drivers_sublist)//2)
+            #random sample indeksa duljine r
+            sample = random.sample(range(0,len(drivers_sublist)), r)
+            for k in sample:
+                if self.tryToInsert2(rider, drivers_sublist[k]):
+                    self.unmatched.remove(rider)
+                    break
+            
+            if rider not in self.unmatched: continue
+            #ako ridera nismo ubacili, pokusavamo u ostatku liste
+            new_try = set(range(len(drivers_sublist))) - set(sample)
+            for k in new_try:
+                if self.tryToInsert2(rider, drivers_sublist[k]):
+                    self.unmatched.remove(rider)
+                    break
+
+        #varijanta samo sa random dijelom liste - otprilike ista brzina i rezultat
+        #r = random.randint(len(drivers_sublist)//4, 3*len(drivers_sublist)//4)
+        #sample = random.sample(range(0,len(drivers_sublist)), r)
+        #for k in sample:
+            #if self.tryToInsert2(rider, drivers_sublist[k]):
+                #self.unmatched.remove(rider)
+                #break
 
     def tryToInsert(self, rider, routeId = -1): #probaj ga negde staviti 
         driversCopy = [i for i in range(len(self.routes))]
@@ -525,11 +611,13 @@ class Solution:
                                             return True
         return False
 
-    def tryToInsert2(self, rider, driver, routeIndex = -1): #probaj ga negde staviti 
-        if self.routes.index(driver) != routeIndex:
-            if driver.depTime[0] < rider.depTime[1] and driver.arrivalTime[1] > rider.arrivalTime[0]: #vremenski okvir je okej
+    def tryToInsert2(self, rider, driver):
+        #provjera maxdist
+        if self.D[driver.start][rider.start] + self.D[rider.start][rider.end] + self.D[rider.end][driver.end] <= driver.maxDist:
+            #provjera maxtime
+            if self.T[driver.start][rider.start] + self.T[rider.start][rider.end] + self.T[rider.end][driver.end] <= driver.maxTime:
                 if len(driver.stops) == 0:
-                    if rider.numOfPassengers <= driver.capacity and driver.checkDistance(rider, 0, 1) and driver.checkTime(rider, 0, 1):
+                    if rider.numOfPassengers <= driver.capacity and driver.checkTime(rider, 0, 1): #dist za prazno vec provjereno u prvom ifu
                         time1 = driver.depTime[0] + self.T[driver.start][rider.start]
                         w1 = max(0, rider.depTime[0] - driver.depTime[0] - self.T[driver.start][rider.start])
                         time2 = time1 + self.T[rider.start][rider.end]
