@@ -1,5 +1,6 @@
 
 from tkinter import *
+from tkinter.ttk import *
 from parseData import *
 from distAndTime import *
 from genAlg import *
@@ -25,7 +26,14 @@ class Prozor(Frame):
         return
     
     def kreirajSucelje(self):
-
+        
+        #font
+        self.style = Style(self)
+        self.style.configure("TLabel", font = ('Arial', 20))
+        self.style.configure("TButton", font = ('Arial', 20))
+        self.style.configure("TMenubutton", font = ('Arial', 20))
+        
+        #odabir podataka & ispis rezultata
         self.L1 = Label(self, text = 'Ime ulazne datoteke: ')
         self.L1.grid(row = 0, column = 0, columnspan = 2)
         
