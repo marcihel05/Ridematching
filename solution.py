@@ -314,12 +314,12 @@ class Solution:
                 random.shuffle(self.unmatched)
                 for rider in self.unmatched:
                     #self.tryToInsert2(rider, route)
-                    if self.tryToInsert2(rider, route): self.unmatched.remove(rider)
+                    if route.depTime[0] <= rider.depTime[1] and route.arrivalTime[1] >= rider.arrivalTime[0] and self.tryToInsert2(rider, route): self.unmatched.remove(rider)
                         #route.adjustTimes()
             elif not len(route.stops):
                 random.shuffle(self.unmatched)
                 for rider in self.unmatched:
-                    if self.tryToInsert2(rider, route): self.unmatched.remove(rider)
+                    if route.depTime[0] <= rider.depTime[1] and route.arrivalTime[1] >= rider.arrivalTime[0] and self.tryToInsert2(rider, route): self.unmatched.remove(rider)
                 
     
     def transfer(self, rate): #fourth mutation operator
