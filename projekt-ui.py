@@ -39,7 +39,7 @@ class Prozor(Frame):
         
         self.vchoice = StringVar()
         self.vchoice.set('RM698_L15.txt')
-        self.choices = ['RM698_L15.txt', 'RM698_L60.txt', 'RM698_R15.txt', 'RM698_R60.txt', 'RM744_L15.txt', 'RM744_L60.txt', 'RM744_R15.txt', 'RM744_R60.txt']
+        self.choices = ['RM698_L15.txt', 'RM698_L15.txt', 'RM698_L60.txt', 'RM698_R15.txt', 'RM698_R60.txt', 'RM744_L15.txt', 'RM744_L60.txt', 'RM744_R15.txt', 'RM744_R60.txt']
         self.option = OptionMenu(self, self.vchoice, *self.choices)
         self.option.grid(row = 0, column = 2, columnspan = 2)
         
