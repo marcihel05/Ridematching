@@ -1,4 +1,4 @@
 # Ridematching
-potrebni python moduli - matplotlib, pylab, pygame, tkinter \n
-potrebna verzija pythona: 3 \n
+potrebni python moduli - matplotlib, pylab, pygame, tkinter  
+potrebna verzija pythona: 3  
 pokretanje iz komandne linije: python projekt-ui.py
