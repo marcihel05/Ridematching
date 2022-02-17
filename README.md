@@ -1,2 +1,4 @@
 # Ridematching
-settings.py - parametri koji se unose preko grafickog sucelja koje za sad nemamo
+potrebni python moduli - matplotlib, pylab, pygame, tkinter
+potrebna verzija pythona: 3
+pokretanje iz komandne linije: python projekt-ui.py
