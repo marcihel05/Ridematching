@@ -16,8 +16,6 @@ def calcDistance(a, b):
     return R*c
 
 def distances(locations):
-    from math import ceil
-    #print(locations)
     distance_between_locations = list()
     for i in range(len(locations)):
         pom_list = []
@@ -33,7 +31,6 @@ def times(locations, distances, V):
         pom_list = list()
         for j in range(len(locations)):
             a = distances[i][j]/V
-            #aa = int((a * 10) + 0.5) / 10.0 
             pom_list.append(ceil(a))
         time_between_locations.append(pom_list)
     return time_between_locations

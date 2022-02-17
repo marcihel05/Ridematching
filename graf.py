@@ -7,10 +7,6 @@ import pylab
 def plot_solution(x,y,z,i):
 
     plot1 = plt.figure(i)
-    
-    #pylab.xlim(min(x), max(x))
-    #pylab.ylim(min(y), max(y))
-    
     pylab.xlabel('X')
     pylab.ylabel('Y')
     pylab.title('GEN ' + str(i))
@@ -18,8 +14,6 @@ def plot_solution(x,y,z,i):
     for i in range(len(x)):
         plt.scatter(x[i], y[i])
         plt.plot(x[i], y[i])
-    #for t in z:
-     #   plt.annotate(t[1], t[0])
 
     return plt
 
@@ -39,7 +33,6 @@ def plotSolutionOnMap(coords):
     map = plt.imread('map.png')
     BBox = (-88.75, -87.0, 41.0, 42.6)
     fig, ax = plt.subplots(figsize = (8,7))
-    #ax.scatter(x, y, zorder=1, alpha= 0.2, c='b', s=10)
     ax.set_title('map')
     ax.set_xlim(BBox[0],BBox[1])
     ax.set_ylim(BBox[2],BBox[3])
@@ -50,5 +43,4 @@ def plotSolutionOnMap(coords):
         for i in range(len(x)):
             ax.scatter(x[i], y[i], zorder=1)
             ax.plot(x[i], y[i], zorder=1)
-    #ax.scatter(x, y, zorder=1, alpha= 0.2, c='b', s=10)
     plt.show()
