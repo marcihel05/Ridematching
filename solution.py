@@ -78,18 +78,17 @@ class Solution:
         self.swap2(rate)
     
     def pushBackward(self, rate): #first mutation operator #dodaj vozača
-        l = random.sample(range(0,len(self.routes)),50)
-        for i in l:
+        randList = random.sample(range(0, self.numOfRoutes), int(floor(rate*self.numOfRoutes)))
+        for i in randList:
             route = self.routes[i]
-            r = random.random()
-            if r < rate and len(route.stops) < 0: #mutiraj
+            if len(route.stops) < 0: #mutiraj
                 i = random.randrange(-1, len(route.stops))
                 if i == -1:
                     if route.startTime - route.depTime[0] > 0: pb = ceil(random.uniform(0, route.startTime - route.depTime[0]))
                     else: continue
                     route.startTime = route.startTime - pb
                 route.pushBackwardAll(i+1, pb)
-            elif r < rate and not len(route.stops):
+            elif not len(route.stops):
                  if route.startTime - route.depTime[0] > 0: pb = ceil(random.uniform(0, route.startTime - route.depTime[0]))
                  else: continue
                  if route.endTime - pb < route.arrivalTime[0]: continue
