@@ -33,10 +33,9 @@ def plotSolutionOnMap(coords):
     ax.set_xlim(BBox[0],BBox[1])
     ax.set_ylim(BBox[2],BBox[3])
     ax.imshow(map, zorder=0, extent = BBox, aspect= 'auto')
-    for c in coords:
-        x = c[0]
-        y = c[1]
-        for i in range(len(x)):
-            ax.scatter(x[i], y[i], zorder=1)
-            ax.plot(x[i], y[i], zorder=1)
+    x = coords[0]
+    y = coords[1]
+    for i in range(len(x)):
+        ax.scatter(x[i], y[i], zorder=1)
+        ax.plot(x[i], y[i], zorder=1)
     plt.show()
