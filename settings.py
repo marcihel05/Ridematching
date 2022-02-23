@@ -14,7 +14,7 @@ V = 1 #km/min (60 km/h)
 NUM_OF_SOLUTIONS = 100
 NUM_OF_ITERATIONS = 100 #ako radimo na broj iteracija
 
-MUTATION_RATE = 0.4
+MUTATION_RATE = 0.04
 
 WIN_HEIGHT = 700
 WIN_WIDTH = 1000
