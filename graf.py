@@ -2,14 +2,12 @@
 import matplotlib.pyplot as plt     #potrebno instalirati
 import pylab
 
-#x - lista listi x koord., y - lista listi y koord., z - lista koord. i labela
-#i - broj generacije
-def plot_solution(x,y,z,i):
+#x - lista listi x koord., y - lista listi y koord.
+def plot_solution(x,y):
 
-    plot1 = plt.figure(i)
     pylab.xlabel('X')
     pylab.ylabel('Y')
-    pylab.title('GEN ' + str(i))
+    pylab.title('Prikaz rjesenja')
     
     for i in range(len(x)):
         plt.scatter(x[i], y[i])
@@ -18,14 +16,12 @@ def plot_solution(x,y,z,i):
     return plt
 
 def main(p):
-    for x in p:
-        plt = plot_solution(x[0], x[1], x[2], x[3])
+    plt = plot_solution(x[0], x[1])
     plt.show()
     return
 
 def mainMap(p):
-    for x in p:
-        plt = plotSolutionOnMap(x[0], x[1], x[2], x[3])
+    plt = plotSolutionOnMap(x[0], x[1])
     plt.show()
     return
 
