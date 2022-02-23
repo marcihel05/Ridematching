@@ -66,8 +66,6 @@ class Solution:
                                 if inserted: break #prekida for i
        self.unmatched = ridersCopy
        self.numOfRoutes = len(self.routes)
-       # sort drivera po dep time - za insertUnmatched2
-       self.routes.sort(key = lambda x: x.depTime[0])
             
         
     def mutate(self, rate):
